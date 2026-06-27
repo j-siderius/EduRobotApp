@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test</title>
+
+    <!-- Load Blockly core -->
+    <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+    <!-- Load the default blocks -->
+    <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+    <!-- Load a generator -->
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <!-- Load a message file -->
+    <script src="https://unpkg.com/blockly/msg/en.js"></script>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        #blocklyDiv {
+            width: 100%;
+            height: 80%;
+        }
+    </style>
+</head>
+
+<body>
+    <button onclick="toggleLED()">Toggle LED</button>
+    <p>Temperature value: <span id="temp"></span><br>
+        Random value: <span id="rand"></span><br>
+        Rising value: <span id="rising"></span><br>
+        <br>
+        Loop execution time: <span id="exec_time"></span>
+    </p>
+
+    <div id="blocklyDiv">
+        <button id="runCode" onclick="runCode()">Run code</button>
+        <button id="stopCode" onclick="stopCode()">Stop code</button>
+    </div>
+
+    <script>
+        const socket = new WebSocket("ws://192.168.1.135/");
+        let db = {};
+
+        // Connection opened
+        socket.addEventListener("open", (event) => {
+            console.log("WS opened");
+            socket.send("Hello server!");
+        });
+        // Listen for messages
+        socket.addEventListener("message", (event) => {
+            try {
+                let data = JSON.parse(String(event.data));
+                for (const key in data) {
+                    db[key] = data[key];
+                }
+            }
+            catch (err) {
+                console.log("WS message: ", event.data);
+            }
+        });
+        // Listen for errors
+        socket.addEventListener("error", (event) => {
+            console.log("WS error:", event);
+        });
+        // Connection closed
+        socket.addEventListener("close", (event) => {
+            console.log("WS closed");
+        });
+
+        function toggleLED() {
+            socket.send("LED");
+        }
+
+        setInterval(() => {
+            document.getElementById("temp").innerHTML = db["temperature_celsius"];
+            document.getElementById("rand").innerHTML = db["random_int"];
+            document.getElementById("rising").innerHTML = db["rising_value"];
+        }, 10);
+
+        // -------------------------------------------------------------------------------------
+
+        let workspace;
+        function buildBlocklyWorkspace() {
+            // Define custom blocks
+            Blockly.Blocks['when_start'] = {
+                init: function () {
+                    this.appendDummyInput()
+                        .appendField("When START is pressed");
+                    this.setNextStatement(true);
+                    this.setColour(160);
+                }
+            };
+            Blockly.Blocks['log'] = {
+                init: function () {
+                    this.appendDummyInput()
+                        .appendField('Log')
+                        .appendField(new Blockly.FieldTextInput('message'), 'MSG');
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour(0);
+                }
+            };
+            Blockly.Blocks['send_websocket'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Websocket message:')
+                        .appendField(new Blockly.FieldTextInput('default'), 'MSG');
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                }
+            };
+
+            Blockly.Blocks['start'] = {
+                init: function () {
+                    this.appendDummyInput()
+                        .appendField('Starting block');
+                    this.appendStatementInput('SETUP')
+                        .appendField('Setup');
+                    this.appendStatementInput('LOOP')
+                        .appendField('Loop');
+                    this.setColour(120);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['start'] = function (block) {
+                var statements_setup = Blockly.JavaScript.statementToCode(block, 'SETUP');
+                var statements_loop = Blockly.JavaScript.statementToCode(block, 'LOOP');
+
+                var code = statements_setup +
+                    `function loop() {
+                        if (_stop) clearInterval(intervalFunction);
+                        const startTime = performance.now();
+                        ${statements_loop}
+                        const endTime = performance.now();
+                        const executionTime = endTime - startTime;
+                        document.getElementById("exec_time").innerHTML = executionTime;
+                        if (executionTime > 9) {
+                            throw 'Loop execution took ' + executionTime.toFixed(2) + 'ms, exceeding 9ms limit';
+                        }
+                    }
+
+                    const intervalFunction = setInterval(loop, 10);
+                    `;
+
+                return code;
+            };
+
+
+            // Sensor blocks
+            Blockly.Blocks['temperature'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Temperature sensor');
+                    this.setOutput(true, null);
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['temperature'] = function () {
+                var code = 'db["temperature_celsius"]';
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
+
+            Blockly.Blocks['random'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Random sensor');
+                    this.setOutput(true, null);
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['random'] = function () {
+                var code = 'db["random_int"]';
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
+
+            Blockly.Blocks['rising'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Rising sensor');
+                    this.setOutput(true, null);
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['rising'] = function () {
+                var code = 'db["rising_value"]';
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
+
+            // Define block generators
+            javascript.javascriptGenerator.forBlock['when_start'] = function (block) {
+                return '// When START is pressed\n';
+            };
+            javascript.javascriptGenerator.forBlock['log'] = function (block) {
+                return `console.log("${block.getFieldValue('MSG')}");\n`;
+            };
+            javascript.javascriptGenerator.forBlock['send_websocket'] = function (block) {
+                return `socket.send("${block.getFieldValue('MSG')}");\n`;
+            };
+
+            Blockly.Blocks['ledon'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('LED on')
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['ledon'] = function () {
+                return 'socket.send("LEDON");\n';
+            }
+            Blockly.Blocks['ledoff'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('LED off')
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['ledoff'] = function () {
+                return 'socket.send("LEDOFF");\n';
+            }
+            Blockly.Blocks['led'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('LED toggle')
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['led'] = function () {
+                return 'socket.send("LED");\n';
+            }
+
+            const toolbox = {
+                "kind": "categoryToolbox",
+                "contents": [
+                    {
+                        "kind": "category",
+                        "name": "Control",
+                        "contents": [
+                            { kind: 'block', type: 'when_start' },
+                            { kind: 'block', type: 'log' },
+                            { kind: 'block', type: 'send_websocket' },
+                            { kind: 'block', type: 'start' },
+                            { "kind": "block", "type": "controls_if" },
+                            { "kind": "block", "type": "controls_ifelse" },
+                            { "kind": "block", "type": "controls_repeat" },
+                            { "kind": "block", "type": "controls_whileUntil" },
+                            { "kind": "block", "type": "controls_flow_statements" },
+                        ]
+                    },
+                    {
+                        "kind": "category",
+                        "name": "Logic",
+                        "contents": [
+                            { "kind": "block", "type": "logic_negate" },
+                            { "kind": "block", "type": "logic_operation" },
+                            { "kind": "block", "type": "logic_boolean" },
+                            { "kind": "block", "type": "logic_compare" },
+                        ]
+                    },
+                    {
+                        "kind": "category",
+                        "name": "Variables",
+                        "contents": [
+                            { "kind": "block", "type": "variables_get" },
+                            { "kind": "block", "type": "variables_set" },
+                            { "kind": "block", "type": "math_number" },
+                            { "kind": "block", "type": "text" },
+                            { "kind": "block", "type": "math_random_int" },
+                        ]
+                    },
+                    {
+                        "kind": "category",
+                        "name": "Sensors",
+                        "contents": [
+                            { kind: "block", type: "temperature" },
+                            { kind: "block", type: "random" },
+                            { kind: "block", type: "rising" },
+                        ]
+                    },
+                    {
+                        "kind": "category",
+                        "name": "outputs",
+                        "contents": [
+                            { kind: "block", type: "led" },
+                            { kind: "block", type: "ledon" },
+                            { kind: "block", type: "ledoff" },
+                        ]
+                    },
+                ]
+            };
+
+            workspace = Blockly.inject('blocklyDiv', { toolbox: toolbox, sounds: false });
+        }
+        buildBlocklyWorkspace();
+
+        function runCode() {
+            _stop = false;
+            // window.LoopTrap = 1000;
+            // javascript.javascriptGenerator.INFINITE_LOOP_TRAP =
+            //     'if(--window.LoopTrap == 0) throw "Infinite loop.";\n';
+            const code = javascript.javascriptGenerator.workspaceToCode(Blockly.getMainWorkspace());
+            console.log(code);
+
+            // Only for testing!
+            try {
+                eval(code);
+            } catch (e) {
+                console.error("The Blockly code threw an error: " + e);
+            }
+        }
+
+        let _stop = false;
+        function stopCode() {
+            _stop = true;
+        }
+    </script>
+</body>
+
+</html>

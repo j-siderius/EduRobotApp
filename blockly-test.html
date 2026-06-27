@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- Load Blockly core -->
+    <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+    <!-- Load the default blocks -->
+    <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+    <!-- Load a generator -->
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <!-- Load a message file -->
+    <script src="https://unpkg.com/blockly/msg/en.js"></script>
+
+</head>
+
+<body>
+    <div id="blocklyDiv" style="height: 480px; width: 600px;"></div>
+
+    <button id="exportButton">Export code</button>
+
+    <script>
+
+        // Define custom blocks
+        Blockly.Blocks['when_start'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("When START is pressed");
+                this.setNextStatement(true);
+                this.setColour(160);
+            }
+        };
+
+        Blockly.Blocks['repeat_n_times'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("Repeat")
+                    .appendField(new Blockly.FieldNumber(10, 0), "TIMES")
+                    .appendField("times");
+                this.appendStatementInput("DO")
+                    .setCheck(null);
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(230);
+            }
+        };
+
+        Blockly.Blocks['motor_set_speed'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("Motor")
+                    .appendField(new Blockly.FieldNumber(1, 1), "MOTOR_NUMBER")
+                    .appendField("set speed")
+                    .appendField(new Blockly.FieldNumber(50, -100, 100), "SPEED");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(65);
+            }
+        };
+
+        Blockly.Blocks['all_motors_stop'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("All motors stop");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(290);
+            }
+        };
+
+        // Add delay block definition
+        Blockly.Blocks['delay'] = {
+            init: function () {
+                this.appendValueInput("INPUT")
+                    .appendField("Delay")
+                    .appendField(new Blockly.FieldNumber(1, 0), "TIME")
+                    .appendField("seconds");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+            }
+        };
+
+        // Numerical value
+        Blockly.Blocks['number_variable'] = {
+            init: function () {
+                this.appendValueInput("INPUT")
+                    .appendField(new Blockly.FieldNumber(1, 0), "VALUE")
+                this.setColour(180);
+            }
+        };
+
+        // Block for variable getter.
+        Blockly.Blocks['variables_get'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField(new Blockly.FieldVariable("VAR_NAME"), "FIELD_NAME");
+                this.setOutput(true, null);
+                this.setColour(180);
+            }
+        };
+
+        // Block for variable setter.
+        Blockly.Blocks['variables_set'] = {
+            init: function () {
+                this.appendValueInput("NAME")
+                    .setCheck(null)
+                    .appendField("set")
+                    .appendField(new Blockly.FieldVariable("VAR_NAME"), "FIELD_NAME")
+                    .appendField("to");
+                this.setOutput(true, null);
+                this.setColour(180);
+            }
+        };
+
+        // Define block generators
+        javascript.javascriptGenerator.forBlock['when_start'] = function (block) {
+            return '// When START is pressed\n';
+        };
+
+        javascript.javascriptGenerator.forBlock['repeat_n_times'] = function (block) {
+            var number_times = block.getFieldValue('TIMES');
+            var statements_do = Blockly.JavaScript.statementToCode(block, 'DO');
+            var code = 'for (var i = 0; i < ' + number_times + '; i++) {\n' + statements_do + '}\n';
+            return code;
+        };
+
+        javascript.javascriptGenerator.forBlock['motor_set_speed'] = function (block) {
+            var number_motor_number = block.getFieldValue('MOTOR_NUMBER');
+            var number_speed = block.getFieldValue('SPEED');
+            var code = 'motor' + number_motor_number + '.setSpeed(' + number_speed + ');\n';
+            return code;
+        };
+
+        javascript.javascriptGenerator.forBlock['all_motors_stop'] = function (block) {
+            var code = 'allMotorsStop();\n';
+            return code;
+        };
+
+        // Add delay block generator
+        javascript.javascriptGenerator.forBlock['delay'] = function (block) {
+            var number_time = block.getFieldValue('TIME');
+            var code = 'delay(' + number_time + ');\n';
+            return code;
+        };
+
+        const toolbox = {
+            kind: 'flyoutToolbox',
+            contents: [
+                {
+                    kind: 'block',
+                    type: 'when_start'
+                },
+                {
+                    kind: 'block',
+                    type: 'repeat_n_times'
+                },
+                {
+                    kind: 'block',
+                    type: 'motor_set_speed'
+                },
+                {
+                    kind: 'block',
+                    type: 'all_motors_stop'
+                },
+                {
+                    kind: 'block',
+                    type: 'delay'
+                },
+                {
+                    kind: 'block',
+                    type: 'number_variable'
+                },
+                {
+                    kind: 'block',
+                    type: 'variables_get'
+                },
+                {
+                    kind: 'block',
+                    type: 'variables_set'
+                }
+            ]
+        };
+
+        const workspace = Blockly.inject('blocklyDiv', { toolbox: toolbox });
+
+        const modernCorporateTheme = Blockly.Theme.defineTheme('modernCorporate', {
+            json: {
+                "name": "modernCorporate",
+                "blockStyles": {
+                    "flex": {
+                        "colourPrimary": "#3B5998",
+                        "colourSecondary": "#4A6FA5",
+                        "colourTertiary": "#5B7FAC",
+                        "hat": "cap"
+                    },
+                    "logic": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "loop": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "math": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "text": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "variables": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "procedures": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "colour": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "when_start": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "repeat_n_times": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "motor_set_speed": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "all_motors_stop": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "delay": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "number_variable": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "variables_get": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    },
+                    "variables_set": {
+                        "colourPrimary": "#4A6FA5",
+                        "colourSecondary": "#5B7FAC",
+                        "colourTertiary": "#7C9ED4"
+                    }
+                },
+                "colourPalette": [
+                    "#3B5998",
+                    "#4A6FA5",
+                    "#5B7FAC",
+                    "#7C9ED4",
+                    "#95A8D1",
+                    "#B2C2E6",
+                    "#D9E1F2",
+                    "#E6ECFA"
+                ],
+                "fontStyle": {
+                    "family": "Arial, sans-serif",
+                    "weight": "normal",
+                    "style": "normal"
+                },
+                "startHats": true,
+                "blockStyle": "straight"
+            }
+        });
+        workspace.setTheme(modernCorporateTheme);
+
+        document.getElementById("exportButton").addEventListener("click", () => {
+            let code = javascript.javascriptGenerator.workspaceToCode(Blockly.getMainWorkspace());
+            console.log(code);
+        });
+
+    </script>
+</body>
+
+</html>
