@@ -56,7 +56,7 @@
 
     <div>
         <label for="websocketIP">WebSocket IP:</label>
-        <input type="text" id="websocketIP" value="192.168.1.8:80">
+        <input type="text" id="websocketIP" value="">
         <button id="connectButton">Connect</button>
     </div>
 
@@ -81,8 +81,7 @@
 
         document.getElementById("connectButton").addEventListener("click", () => {
             let ip = document.getElementById("websocketIP").value;
-            if (!ip.includes(":80")) ip += ":80";
-            socket = new WebSocket(`ws://${ip}/ws`);
+            socket = new WebSocket(ip);
 
             socket.addEventListener("open", (event) => {
                 logDebug("Connected to WebSocket server");
@@ -120,8 +119,8 @@
             }
         }
 
+        const messageOutput = document.getElementById("messageOutput");
         function logMessage(message) {
-            const messageOutput = document.getElementById("messageOutput");
             messageOutput.value += message + "\n";
             messageOutput.scrollTop = messageOutput.scrollHeight;
         }
