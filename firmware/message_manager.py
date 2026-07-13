@@ -1,49 +1,84 @@
-import re
+# import re
+# 
+# 
+# class MessageManager:
+#     def __init__(self) -> None:
+#         self.isint_regex = re.compile(r'^-?[0-9]+$')
+#         self.message_callbacks = list()
+# 
+#     def add_message(self, message_format: list[str], callback_function) -> bool:
+#         try:
+#             self.message_callbacks.append(
+#                 {"format": message_format, "callback": callback_function})
+#             return True
+#         except Exception as e:
+#             print(f"Failed to add callback function with Exception {e}")
+#             return False
+# 
+#     def process_message(self, message: str) -> bool:
+#         split_message = message.split('/')[1:]
+#         commands, variables = list(), list()
+#         for item in split_message:
+#             if self.isint_regex.match(item):
+#                 variables.append(item)
+#             else:
+#                 commands.append(item)
+# 
+#         for message_callback in self.message_callbacks:
+#             if message_callback['format'] == commands:
+#                 message_callback['callback'](variables)
+#                 return True
+#         print(f"No callback found for {commands}")
+#         return False
+
+import re, asyncio
 
 class MessageManager:
     def __init__(self) -> None:
-        self.message_regex = re.compile("/| ")
-        self.isdigit_regex = re.compile(r'^-?[0-9]+$')
+        # Regex to match integers and floats (including negative)
+        self.number_regex = re.compile(r'^-?\d+(\.\d+)?$')
         self.message_callbacks = list()
 
     def add_message(self, message_format: list[str], callback_function) -> bool:
         try:
             self.message_callbacks.append(
                 {"format": message_format, "callback": callback_function})
-
-            print(
-                f"message_manager: callback {callback_function.__name__} successfully added with message format {message_format}")
             return True
         except Exception as e:
-            print(
-                f"message_manager: Failed to add callback function with Exception {e}")
+            print(f"Failed to add callback function with Exception {e}")
             return False
 
-    def process_message(self, message: str) -> bool:
+    def _to_number(self, s: str):
+        """Convert string to int or float."""
+        return float(s) if '.' in s else int(s)
+
+    async def process_message(self, message: str) -> bool:
         split_message = message.split('/')[1:]
         commands, variables = list(), list()
+
         for item in split_message:
-            if self.isdigit_regex.match(item):
-                variables.append(item)
+            if self.number_regex.match(item):
+                variables.append(self._to_number(item))
             else:
                 commands.append(item)
 
+        print(f"process_message {commands}, {variables}")
+
         for message_callback in self.message_callbacks:
             if message_callback['format'] == commands:
-                message_callback['callback'](variables)
+                # Unpack the variables list as separate arguments
+                await message_callback['callback'](*variables)
                 return True
-        print(
-            f"message_manager: No callback was found for the incoming message with commands {commands} and variables {variables}")
+        print(f"No callback found for {commands}")
         return False
 
 
-# Run test cases if this file is run as main
 if __name__ == "__main__":
-
+    # Test functionality
     message_manager = MessageManager()
 
     def test_function(variables: tuple) -> None:
-        print(f"message_manager: Test function called with variables {variables}")
+        print(f"Message manager Test function called with variables {variables}")
         
     message_manager.add_message(['tests','test'], test_function)
 
