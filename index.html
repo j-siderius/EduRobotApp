@@ -204,6 +204,11 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
+        .btn-run {
+            background-color: #427d5a;
+            animation: pulse 2s infinite;
+        }
+
         .btn-secondary {
             background-color: #e8ecf1;
             color: #2c3e50;
@@ -432,6 +437,10 @@
                 align-items: flex-start;
             }
         }
+
+        .blocklyToolboxCategoryLabel {
+            color: #2c3e50;
+        }
     </style>
     <!-- Load Blockly core -->
     <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
@@ -476,17 +485,18 @@
                 <div class="canvas-header">
                     <h2>Blockly Programming Canvas</h2>
                     <div class="canvas-controls">
-                        <!-- TODO: implement saving and logical file naming system -->
-                        <button class="btn btn-secondary">Save code</button>
-                        <!-- TODO: change run button color when running as visual indicator. Potentially merge with stop button? -->
-                        <button class="btn btn-primary" onclick="runCode();">Run code</button>
+                        <button class="btn btn-secondary"
+                            onclick="document.getElementById('jsonFileInput').click();">Load code</button>
+                        <input type="file" id="jsonFileInput" accept=".json" style="display:none;"
+                            onchange="loadCode(event)" />
+                        <button class="btn btn-secondary" onclick="saveCode()">Save code</button>
+                        <hr>
+                        <button class="btn btn-primary" id="runButton" onclick="runCode();">Run code</button>
                         <button class="btn btn-red" onclick="stopCode();">Stop code</button>
                     </div>
                 </div>
                 <div class="blockly-canvas">
-                    <!-- TODO: change text styling for blockly interface from general page text -->
                     <div id="blocklyDiv" style="height: 100%; width: 100%;"></div>
-                    <!-- <p>Blockly canvas will be rendered here</p> -->
                 </div>
             </div>
         </div>
@@ -497,47 +507,14 @@
                 <div class="data-header">
                     <h2>Robot Variables</h2>
                 </div>
-                <!-- TODO: make table variablly generate according to all vars that in database (received + local), remove type column -->
                 <table>
                     <thead>
                         <tr>
                             <th>Variable Name</th>
-                            <th>Type</th>
                             <th>Value</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td class="variable-name">distance_to_obstacle</td>
-                            <td class="variable-type">Number (cm)</td>
-                            <td><span class="variable-value">25.5</span></td>
-                        </tr>
-                        <tr>
-                            <td class="variable-name">motor_speed</td>
-                            <td class="variable-type">Number (0-255)</td>
-                            <td><span class="variable-value">150</span></td>
-                        </tr>
-                        <tr>
-                            <td class="variable-name">is_moving</td>
-                            <td class="variable-type">Boolean</td>
-                            <td><span class="variable-value">true</span></td>
-                        </tr>
-                        <tr>
-                            <td class="variable-name">rotation_angle</td>
-                            <td class="variable-type">Number (degrees)</td>
-                            <td><span class="variable-value">90</span></td>
-                        </tr>
-                        <tr>
-                            <td class="variable-name">sensor_reading</td>
-                            <td class="variable-type">Number</td>
-                            <td><span class="variable-value">512</span></td>
-                        </tr>
-                        <tr>
-                            <td class="variable-name">battery_level</td>
-                            <td class="variable-type">Number (%)</td>
-                            <td><span class="variable-value">85</span></td>
-                        </tr>
-                    </tbody>
+                    <tbody id="dbTableBody"></tbody>
                 </table>
             </div>
         </div>
@@ -549,23 +526,20 @@
                 <form id="settings-form">
                     <div class="form-group">
                         <label for="robot-address">Robot Address</label>
-                        <input type="text" id="robot-address" name="robot-address" or robot.local"
-                            value="192.168.1.100">
+                        <input type="text" id="robot-address" name="robot-address" value="192.168.1.100">
                         <div class="form-helper">IP address or hostname of your robot</div>
                     </div>
 
-                    <!-- TODO: implement or leave speed control -->
-                    <!-- <div class="form-group">
-                        <label for="robot-speed">Motor Speed (0-255)</label>
-                        <input type="number" id="robot-speed" name="robot-speed" min="0" max="255" value="150">
+                    <!-- WARNING: Speed currently disabled! -->
+                    <div class="form-group" style="display: none;">
+                        <label for="robot-speed">Motor Speed (1-10)</label>
+                        <input type="number" id="robot-speed" name="robot-speed" min="1" max="10" value="5">
                         <div class="form-helper">Default motor speed for movement commands</div>
-                    </div> -->
+                    </div>
 
                     <div class="button-group">
-                        <!-- TODO: prevent default page reload, save IP to localstorage and try connecting -->
-                        <button type="submit" class="btn-save">Save Settings</button>
-                        <!-- TODO: reset to factory values e.g. default IP and speed -->
-                        <button type="reset" class="btn-reset">Reset</button>
+                        <button type="submit" class="btn-save" onclick="saveSettings()">Save Settings</button>
+                        <button type="reset" class="btn-reset" onclick="removeUserdata()">Reset</button>
                     </div>
                 </form>
             </div>
@@ -618,60 +592,25 @@
 
         // ------------------------------- WEBSOCKETS -----------------------------------------
 
-        // const socket = new WebSocket("ws://192.168.1.135/");
-        // let db = {};
-
-        // // Connection opened
-        // socket.addEventListener("open", (event) => {
-        //     console.log("WS opened");
-        //     socket.send("Hello server!");
-        // });
-        // // Listen for messages
-        // socket.addEventListener("message", (event) => {
-        //     try {
-        //         let data = JSON.parse(String(event.data));
-        //         for (const key in data) {
-        //             db[key] = data[key];
-        //         }
-        //     }
-        //     catch (err) {
-        //         console.log("WS message: ", event.data);
-        //     }
-        // });
-        // // Listen for errors
-        // socket.addEventListener("error", (event) => {
-        //     console.error("WebSocket error:", event);
-        // });
-        // // Connection closed
-        // socket.addEventListener("close", (event) => {
-        //     console.log("WS closed");
-        // });
-
-        // function toggleLED() {
-        //     socket.send("LED");
-        // }
-
-        // setInterval(() => {
-        //     document.getElementById("temp").innerHTML = db["temperature_celsius"];
-        //     document.getElementById("rand").innerHTML = db["random_int"];
-        //     document.getElementById("rising").innerHTML = db["rising_value"];
-        // }, 10);
+        let db = {
+            "version": "0.1"
+        };
+        updateTable();
 
         window.onload = function () {
             let robotaddr;
             let robotsocket;
-            let db = {};
             let lastMessage = performance.now();
             if (localStorage.getItem("robotWebsocketAddress")) {
                 robotaddr = localStorage.getItem("robotWebsocketAddress");
                 connectRobot(robotaddr);
                 document.getElementById("robot-address").value = robotaddr;
             }
-
-            // TODO: implement connection status checking and updating incl heartbeat
             // const connectionstatus = document.getElementById("connectionstatus");
 
             buildBlocklyWorkspace();
+
+            setInterval(updateTable, 100);
         }
 
         const lastPingDOM = document.getElementById('lastPing').value;
@@ -693,7 +632,6 @@
 
                 lastPingDOM = performance.now() - lastMessage;
                 lastMessage = performance.now();
-
 
                 let data = parseMessage(event.data);
                 db[data.keys] = data.variables;
@@ -734,6 +672,37 @@
             if (confirm("Are you sure you want to remove all user data? This includes the Robot setup and all codeblocks!")) {
                 localStorage.removeItem("robotWebsocketAddress");
                 localStorage.removeItem("blocklyWorkspaceState");
+                document.getElementById("robot-address").value = "192.168.1.100";
+                document.getElementById("robot-speed").value = 5;
+            }
+        }
+
+        function saveSettings() {
+            // WARNING: Speed currently disabled!
+            robotaddr = document.getElementById("robot-address").value;
+            connectRobot(`ws://${robotaddr}/`);
+        }
+
+        function updateTable() {
+            const dbTableBody = document.getElementById('dbTableBody');
+            dbTableBody.innerHTML = ''; // Clear existing rows
+
+            for (const [key, value] of Object.entries(db)) {
+                const row = document.createElement('tr');
+
+                const nameCell = document.createElement('td');
+                nameCell.className = 'variable-name';
+                nameCell.textContent = key;
+
+                const valueCell = document.createElement('td');
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'variable-value';
+                valueSpan.textContent = value;
+                valueCell.appendChild(valueSpan);
+
+                row.appendChild(nameCell);
+                row.appendChild(valueCell);
+                dbTableBody.appendChild(row);
             }
         }
 
@@ -944,7 +913,7 @@
                     },
                     {
                         "kind": "category",
-                        "name": "outputs",
+                        "name": "Outputs",
                         "contents": [
                             { kind: "block", type: "led" },
                             { kind: "block", type: "ledon" },
@@ -959,7 +928,7 @@
             // Fetch saved blockly program from localstorage
             if (localStorage.getItem("blocklyWorkspaceState")) {
                 Blockly.serialization.workspaces.load(JSON.parse(localStorage.getItem("blocklyWorkspaceState")), workspace);
-                console.log("Found saved Blockly workspace")
+                console.log("Found saved Blockly workspace");
             }
         }
         buildBlocklyWorkspace();
@@ -970,11 +939,12 @@
             // javascript.javascriptGenerator.INFINITE_LOOP_TRAP =
             //     'if(--window.LoopTrap == 0) throw "Infinite loop.";\n';
             const code = javascript.javascriptGenerator.workspaceToCode(Blockly.getMainWorkspace());
-            
+
             const state = Blockly.serialization.workspaces.save(Blockly.getMainWorkspace());
             localStorage.setItem('blocklyWorkspaceState', JSON.stringify(state));
 
             console.log(code);
+            document.getElementById("runButton").classList.add("btn-run");
 
             // Run the code locally
             try {
@@ -982,6 +952,8 @@
             } catch (e) {
                 console.error("The Blockly code threw an error: " + e);
             }
+
+            document.getElementById("runButton").classList.remove("btn-run");
 
             // Run code could use security features:
             // Stack size measurement https://neil.fraser.name/software/JS-Interpreter/demos/size.html
@@ -1007,6 +979,45 @@
         function stopCode() {
             _stop = true;
         }
+
+        function saveCode() {
+            const state = Blockly.serialization.workspaces.save(Blockly.getMainWorkspace());
+
+            let exportName = "robocode_program_" + Date.now() + ".json";
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            let downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", exportName);
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function loadCode(event) {
+            // Check if a file was selected
+            if (event.target.files.length > 0) {
+                const file = event.target.files[0];
+
+                // Create a FileReader to read the JSON file
+                const reader = new FileReader();
+
+                // Event listener for when the file is loaded
+                reader.onload = function (e) {
+                    try {
+                        console.log('Parsed JSON:', JSON.parse(e.target.result));
+                        // TODO: fix import to Blockly canvas from JSON file
+                        // Blockly.serialization.workspaces.load(e.target.result, Blockly.getMainWorkspace());
+                    } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                        alert('Invalid JSON file');
+                    }
+                };
+
+                // Read the file as text
+                reader.readAsText(file);
+            }
+        }
+
     </script>
 
 </body>
