@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- Load Blockly core -->
+    <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+    <!-- Load the default blocks -->
+    <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+    <!-- Load a generator -->
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <!-- Load a message file -->
+    <script src="https://unpkg.com/blockly/msg/en.js"></script>
+
+    <script src="https://unpkg.com/js-interpreter/lib/js-interpreter.min.js"></script>
+
+    <style>
+        html,
+        body,
+        .container {
+            height: 100%;
+            margin: 0;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 0.4fr 0.1fr 2.5fr;
+            gap: 0px 0px;
+            grid-auto-flow: row;
+            grid-template-areas:
+                "header header header"
+                "tabs tabs tabs"
+                "body body body";
+        }
+
+        .header {
+            grid-area: header;
+        }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr;
+            gap: 0px 0px;
+            grid-auto-flow: row;
+            grid-template-areas:
+                "programmer settings connection";
+            grid-area: tabs;
+        }
+
+        .programmer {
+            grid-area: programmer;
+        }
+
+        .settings {
+            grid-area: settings;
+        }
+
+        .connection {
+            grid-area: connection;
+        }
+
+        .body {
+            grid-area: body;
+        }
+
+        .pane {
+            width: 100%;
+            height: 100%;
+        }
+
+        #blocklyDiv {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Edu Robot Platform</h1>
+        </div>
+        <div class="tabs">
+            <div class="programmer">
+                <button onclick="changeTab('programmer')">Programming Tool</button>
+            </div>
+            <div class="settings">
+                <button onclick="changeTab('settings')">Settings</button>
+            </div>
+            <div class="connection">
+                <p>Connection: <span id="connectionstatus">???</span></p>
+            </div>
+        </div>
+        <div class="body">
+            <div class="pane" id="programmer" style="display: block;">
+                <div id="blocklyDiv">
+                    <button id="runCode" onclick="runCode()">Run code</button>
+                </div>
+            </div>
+            <div class="pane" id="settings" style="display: none;">
+                <h2>Settings</h2>
+                <label for="websocketaddr">Websocket Address for Robot: </label>
+                <input type="text" name="websocketaddr" id="websocketaddr">
+                <button onclick="connectRobot(document.getElementById('websocketaddr').value)">Connect to Robot</button>
+                <br>
+                <label for="removedata">Remove all user data: </label>
+                <button onclick="removeUserdata()">Remove userdata</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function () {
+            let robotaddr;
+            let robotsocket;
+            if (localStorage.getItem("robotWebsocketAddress")) {
+                robotaddr = localStorage.getItem("robotWebsocketAddress");
+                connectRobot(robotaddr);
+                document.getElementById("websocketaddr").value = robotaddr;
+            }
+
+            const connectionstatus = document.getElementById("connectionstatus");
+
+            buildBlocklyWorkspace();
+        }
+
+        function connectRobot(addr) {
+            if (localStorage.getItem("robotWebsocketAddress") != addr) {
+                localStorage.setItem("robotWebsocketAddress", addr);
+            }
+
+            robotsocket = new WebSocket(addr);
+
+            robotsocket.addEventListener("open", (event) => {
+                // console.log(robotsocket);
+                connectionstatus.innerHTML = "Connected";
+            });
+            robotsocket.addEventListener("message", (event) => {
+                console.log("Received WebSocket message: " + event.data);
+            });
+            robotsocket.addEventListener("close", (event) => {
+                console.log("Disconnected from WebSocket server");
+            });
+            robotsocket.addEventListener("error", (event) => {
+                console.error("WebSocket error: " + event.message);
+                connectionstatus.innerHTML = "Could not connect";
+            });
+        }
+
+        const panes = document.getElementsByClassName("pane");
+        function changeTab(tab) {
+            for (let pane of panes) {
+                if (pane.id == tab) {
+                    pane.style.display = "block";
+                } else {
+                    pane.style.display = "none";
+                }
+            }
+        }
+
+        function removeUserdata() {
+            if (confirm("Are you sure you want to remove all user data? This includes the Robot setup and all codeblocks!")) {
+                localStorage.removeItem("robotWebsocketAddress");
+                localStorage.removeItem("blocklyWorkspaceState");
+            }
+        }
+
+        let workspace;
+        function buildBlocklyWorkspace() {
+            // Define custom blocks
+            Blockly.Blocks['when_start'] = {
+                init: function () {
+                    this.appendDummyInput()
+                        .appendField("When START is pressed");
+                    this.setNextStatement(true);
+                    this.setColour(160);
+                }
+            };
+            Blockly.Blocks['log'] = {
+                init: function () {
+                    this.appendDummyInput()
+                        .appendField('Log')
+                        .appendField(new Blockly.FieldTextInput('message'), 'MSG');
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour(0);
+                }
+            };
+            Blockly.Blocks['send_websocket'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Websocket message:')
+                        .appendField(new Blockly.FieldTextInput('default'), 'MSG');
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour(0);
+                }
+            };
+
+            // Sensor blocks
+            const compass = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Compass heading');
+                    this.setOutput(true, null);
+                    this.setTooltip('');
+                    this.setHelpUrl('');
+                    this.setColour(0);
+                }
+            };
+            let compassDegrees = 15;
+            Blockly.common.defineBlocks({ compass: compass });
+            javascript.javascriptGenerator.forBlock['compass'] = function () {
+                const number = Number(compassDegrees);
+                const order = number >= 0 ? Order.ATOMIC : Order.UNARY_NEGATION;
+                return [String(number), order];
+            }
+
+            // Define block generators
+            javascript.javascriptGenerator.forBlock['when_start'] = function (block) {
+                return '// When START is pressed\n';
+            };
+            javascript.javascriptGenerator.forBlock['log'] = function (block) {
+                return `console.log("${block.getFieldValue('MSG')}")`;
+            };
+            javascript.javascriptGenerator.forBlock['send_websocket'] = function (block) {
+                return `console.log('robotsocket.send("${block.getFieldValue('MSG')}")')`;
+            };
+
+            const toolbox = {
+                "kind": "categoryToolbox",
+                "contents": [
+                    {
+                        "kind": "category",
+                        "name": "Control",
+                        "contents": [
+                            { kind: 'block', type: 'when_start' },
+                            { kind: 'block', type: 'log' },
+                            { kind: 'block', type: 'send_websocket' },
+                            { "kind": "block", "type": "controls_if" },
+                            { "kind": "block", "type": "controls_ifelse" },
+                            { "kind": "block", "type": "controls_repeat" },
+                            { "kind": "block", "type": "controls_whileUntil" },
+                            { "kind": "block", "type": "controls_flow_statements" },
+                        ]
+                    },
+                    {
+                        "kind": "category",
+                        "name": "Logic",
+                        "contents": [
+                            { "kind": "block", "type": "logic_negate" },
+                            { "kind": "block", "type": "logic_operation" },
+                            { "kind": "block", "type": "logic_boolean" },
+                            { "kind": "block", "type": "logic_compare" },
+                        ]
+                    },
+                    {
+                        "kind": "category",
+                        "name": "Variables",
+                        "contents": [
+                            { "kind": "block", "type": "variables_get" },
+                            { "kind": "block", "type": "variables_set" },
+                            { "kind": "block", "type": "math_number" },
+                            { "kind": "block", "type": "text" },
+                            { "kind": "block", "type": "math_random_int" },
+                        ]
+                    },
+                    {
+                        "kind": "category",
+                        "name": "Sensors",
+                        "contents": [
+                            { kind: "block", type: "compass" }
+                        ]
+                    },
+                ]
+            };
+
+            workspace = Blockly.inject('blocklyDiv', { toolbox: toolbox, sounds: false });
+
+            // Fetch saved blockly program from localstorage
+            if (localStorage.getItem("blocklyWorkspaceState")) {
+                Blockly.serialization.workspaces.load(JSON.parse(localStorage.getItem("blocklyWorkspaceState")), workspace);
+            }
+        }
+        function runCode() {
+            window.LoopTrap = 1000;
+            javascriptGenerator.INFINITE_LOOP_TRAP =
+                'if(--window.LoopTrap == 0) throw "Infinite loop.";\n';
+            const code = javascript.javascriptGenerator.workspaceToCode(Blockly.getMainWorkspace());
+            console.log(code);
+            const state = Blockly.serialization.workspaces.save(workspace);
+            localStorage.setItem('blocklyWorkspaceState', JSON.stringify(state));
+
+            // Only for testing!
+            try {
+                eval(code);
+            } catch (e) {
+                console.error("The Blockly code threw and error: " + e);
+            }
+
+            // Run code should use security features:
+            // Stack size measurement https://neil.fraser.name/software/JS-Interpreter/demos/size.html
+            // Infinite loop protection https://docs.blockly.com/guides/app-integration/running-javascript/#infinite-loops
+            // var initFunc = function (interpreter, globalObject) {
+            //     var wrapper = function log(text) {
+            //         return console.log(text);
+            //     };
+            //     interpreter.setProperty(globalObject, 'log',
+            //         interpreter.createNativeFunction(wrapper));
+            // }
+
+            // var jsInterpreter = new Interpreter("log('test');", initFunc);
+            // function nextStep() {
+            //     if (jsInterpreter.step()) {
+            //         setTimeout(nextStep, 10);
+            //     }
+            // }
+            // nextStep();
+        }
+    </script>
+</body>
+
+</html>
