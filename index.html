@@ -593,13 +593,7 @@
         // ------------------------------- WEBSOCKETS -----------------------------------------
 
         let db = {
-            "version": "0.1",
-            "/temperature": 21.5,
-            "/front_distance": 10.5,
-            "/cliff": [1, 1, 1],
-            "/battery/voltage": 3.75,
-            "/battery/soc": 20.5,
-            "/motors/position": [0, 0]
+            _version: 0.1
         };
         let robotaddr;
         let robotsocket;
@@ -614,10 +608,10 @@
 
             buildBlocklyWorkspace();
 
-            setInterval(updateTable(), 100);
+            setInterval(updateTable, 100);
         }
 
-        const lastPingDOM = document.getElementById('lastPing').value;
+        const lastPingDOM = document.getElementById('lastPing');
         function connectRobot(addr) {
             if (localStorage.getItem("robotWebsocketAddress") != addr) {
                 localStorage.setItem("robotWebsocketAddress", addr);
@@ -631,9 +625,9 @@
                 setConnectionStatus('connected');
             });
             robotsocket.addEventListener("message", (event) => {
-                console.log("Received WebSocket message: " + event.data);
+                // console.log("Received WebSocket message: " + event.data);
 
-                lastPingDOM = performance.now() - lastMessage;
+                lastPingDOM.innerHTML = new String(performance.now() - lastMessage).padStart(2, "0");
                 lastMessage = performance.now();
 
                 let data = parseMessage(event.data);
@@ -689,7 +683,8 @@
             const dbTableBody = document.getElementById('dbTableBody');
             dbTableBody.innerHTML = ''; // Clear existing rows
 
-            for (const [key, value] of Object.entries(db)) {
+            for (let key in db) {
+                // key, db[key]
                 const row = document.createElement('tr');
 
                 const nameCell = document.createElement('td');
@@ -699,7 +694,7 @@
                 const valueCell = document.createElement('td');
                 const valueSpan = document.createElement('span');
                 valueSpan.className = 'variable-value';
-                valueSpan.textContent = value;
+                valueSpan.textContent = db[key];
                 valueCell.appendChild(valueSpan);
 
                 row.appendChild(nameCell);
@@ -860,14 +855,16 @@
             // ########## COMMAND BLOCKS ##########
             Blockly.Blocks['move_motor'] = {
                 init: function () {
-                    this.appendDummyInput('NAME')
-                        .appendField('Move Motors');
+                    this.appendDummyInput('DESCRIPTION')
+                        .appendField('Move Motors by');
                     this.appendValueInput('XPOS')
-                        .setCheck('Number')
-                        .appendField('X-movement (mm):');
+                        .setCheck('Number');
+                    this.appendDummyInput('DESCRIPTION2')
+                        .appendField('X (mm) and');
                     this.appendValueInput('YPOS')
-                        .setCheck('Number')
-                        .appendField('Y-movement (mm):');
+                        .setCheck('Number');
+                    this.appendEndRowInput('DESCRIPTION3')
+                        .appendField('Y (mm)');
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setTooltip('');
@@ -889,11 +886,12 @@
 
             Blockly.Blocks['rotate_motor'] = {
                 init: function () {
-                    this.appendDummyInput('NAME')
-                        .appendField('Rotate Motors');
+                    this.appendDummyInput('DESCRIPTION')
+                        .appendField('Rotate Motors by');
                     this.appendValueInput('ROTATE')
-                        .setCheck('Number')
-                        .appendField('Rotation (degrees):');
+                        .setCheck('Number');
+                    this.appendEndRowInput('DESCRIPTION2')
+                        .appendField('degrees (0 - 360)');
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setTooltip('');
@@ -915,15 +913,32 @@
             // TODO: implement selection of LED and color via picker?
             Blockly.Blocks['led_color'] = {
                 init: function () {
-                    this.appendDummyInput('NAME')
-                        .appendField('Set LED Color')
+                    this.appendValueInput('LEDCOLOR')
+                        .setCheck('Number')
+                        .appendField('Set LED')
+                        .appendField(new Blockly.FieldDropdown([
+                            ['1', 'one'],
+                            ['2', 'two']
+                        ]), 'LEDNR')
+                        .appendField('to');
+                    this.appendEndRowInput('NAME')
+                        .appendField('(hue)');
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
+                    this.setTooltip('');
+                    this.setHelpUrl('');
                     this.setColour(0);
                 }
             };
-            javascript.javascriptGenerator.forBlock['led_color'] = function () {
-                return 'socket.send("");\n';
+            javascript.javascriptGenerator.forBlock['led_color'] = function (block) {
+                let colorBlock = block.getInputTargetBlock('LEDCOLOR');
+                let hueColor = javascript.javascriptGenerator.blockToCode(colorBlock)[0];
+
+                let ledNr = block.getFieldValue('LEDNR');
+
+                rgbColor = hueToRgb(hueColor);
+
+                return `socket.send("/leds/${ledNr}/${rgbColor.r}/${rgbColor.g}/${rgbColor.b}");\n`;
             }
 
             Blockly.Blocks['log'] = {
@@ -1045,7 +1060,19 @@
                                     }
                                 }
                             },
-                            { "kind": "block", "type": "led_color" },
+                            {
+                                "kind": "block", "type": "led_color",
+                                "inputs": {
+                                    "LEDCOLOR": {
+                                        "block": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 0
+                                            }
+                                        }
+                                    }
+                                }
+                            },
                             {
                                 "kind": 'block', "type": 'log',
                                 "inputs": {
@@ -1175,6 +1202,23 @@
 
                 // Read the file as text
                 reader.readAsText(file);
+            }
+        }
+
+        function hueToRgb(hue) {
+            hue = (hue % 256) / 256 * 6;
+            const i = Math.floor(hue);
+            const f = hue - i;
+            const q = 255 * (1 - f);
+            const t = 255 * f;
+
+            switch (i % 6) {
+                case 0: return { r: 255, g: Math.round(t), b: 0 };
+                case 1: return { r: Math.round(q), g: 255, b: 0 };
+                case 2: return { r: 0, g: 255, b: Math.round(t) };
+                case 3: return { r: 0, g: Math.round(q), b: 255 };
+                case 4: return { r: Math.round(t), g: 0, b: 255 };
+                case 5: return { r: 255, g: 0, b: Math.round(q) };
             }
         }
 
