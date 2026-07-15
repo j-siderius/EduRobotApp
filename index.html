@@ -598,6 +598,8 @@
         let robotaddr;
         let robotsocket;
         let lastMessage;
+        let messageTimer = 0;
+        let messageCounter = 0;
 
         window.onload = function () {
             if (localStorage.getItem("robotWebsocketAddress")) {
@@ -608,7 +610,7 @@
 
             buildBlocklyWorkspace();
 
-            setInterval(updateTable, 100);
+            setInterval(updateTable, 50);
         }
 
         const lastPingDOM = document.getElementById('lastPing');
@@ -627,8 +629,13 @@
             robotsocket.addEventListener("message", (event) => {
                 // console.log("Received WebSocket message: " + event.data);
 
-                lastPingDOM.innerHTML = new String(performance.now() - lastMessage).padStart(2, "0");
+                messageTimer += performance.now() - lastMessage;
                 lastMessage = performance.now();
+                messageCounter += 1;
+                if (messageCounter % 10 == 0) {
+                    lastPingDOM.innerHTML = new String(messageTimer / 10).padStart(2, "0");
+                    messageTimer = 0;
+                }
 
                 let data = parseMessage(event.data);
                 db[data.keys] = data.variables;
@@ -766,7 +773,7 @@
                 }
             };
             javascript.javascriptGenerator.forBlock['temperature'] = function () {
-                var code = 'db["/temperature"]';
+                var code = 'db["temperature"]';
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
 
@@ -779,7 +786,7 @@
                 }
             };
             javascript.javascriptGenerator.forBlock['front_distance'] = function () {
-                var code = 'db["/front_distance"]';
+                var code = 'db["front_distance"]';
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
 
@@ -792,7 +799,7 @@
                 }
             };
             javascript.javascriptGenerator.forBlock['battery_voltage'] = function () {
-                var code = 'db["/battery/voltage"]';
+                var code = 'db["battery,voltage"]';
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
 
@@ -805,7 +812,7 @@
                 }
             };
             javascript.javascriptGenerator.forBlock['battery_soc'] = function () {
-                var code = 'db["/battery/soc"]';
+                var code = 'db["battery,soc"]';
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
 
@@ -826,7 +833,7 @@
                 var positionNr = block.getFieldValue('POSITION');
 
                 // TODO: add position selection here, probably cast to array and then select
-                var code = `db["/motors/position"][${positionNr}]`;
+                var code = `db["motors,position"][${positionNr}]`;
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
 
@@ -847,7 +854,7 @@
                 var cliffNr = block.getFieldValue('CLIFF');
 
                 // TODO: add position selection here, probably cast to array and then select
-                var code = `db["/cliff"][${cliffNr}]`;
+                var code = `db["cliff"][${cliffNr}]`;
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
             // ========== SENSOR / DB BLOCKS ==========
@@ -881,7 +888,7 @@
                 let xpos = javascript.javascriptGenerator.blockToCode(xposBlock)[0];
                 let ypos = javascript.javascriptGenerator.blockToCode(yposBlock)[0];
 
-                return `socket.send("/motors/move/${xpos}/${ypos}");\n`;
+                return `robotsocket.send("/motors/move/${xpos}/${ypos}");\n`;
             }
 
             Blockly.Blocks['rotate_motor'] = {
@@ -907,7 +914,7 @@
                 // Generate code from those blocks
                 let angle = javascript.javascriptGenerator.blockToCode(rotationBlock)[0];
 
-                return `socket.send("/motors/rotate/${angle}");\n`;
+                return `robotsocket.send("/motors/rotate/${angle}");\n`;
             }
 
             // TODO: implement selection of LED and color via picker?
@@ -938,7 +945,7 @@
 
                 rgbColor = hueToRgb(hueColor);
 
-                return `socket.send("/leds/${ledNr}/${rgbColor.r}/${rgbColor.g}/${rgbColor.b}");\n`;
+                return `robotsocket.send("/leds/${ledNr}/${rgbColor.r}/${rgbColor.g}/${rgbColor.b}");\n`;
             }
 
             Blockly.Blocks['log'] = {
@@ -968,7 +975,7 @@
             };
             javascript.javascriptGenerator.forBlock['send_websocket'] = function (block, generator) {
                 var message = generator.valueToCode(block, 'MSG', javascript.Order.ATOMIC);
-                return `socket.send("${message}");\n`;
+                return `robotsocket.send("${message}");\n`;
             };
             // ========== COMMAND BLOCKS ==========
 
