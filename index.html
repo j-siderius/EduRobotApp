@@ -595,22 +595,18 @@
         let db = {
             "version": "0.1"
         };
-        updateTable();
+        let robotaddr;
+        let robotsocket;
+        let lastMessage;
 
         window.onload = function () {
-            let robotaddr;
-            let robotsocket;
-            let lastMessage = performance.now();
             if (localStorage.getItem("robotWebsocketAddress")) {
                 robotaddr = localStorage.getItem("robotWebsocketAddress");
                 connectRobot(robotaddr);
                 document.getElementById("robot-address").value = robotaddr;
             }
-            // const connectionstatus = document.getElementById("connectionstatus");
 
             buildBlocklyWorkspace();
-
-            setInterval(updateTable, 100);
         }
 
         const lastPingDOM = document.getElementById('lastPing').value;
@@ -651,8 +647,8 @@
             // Split by '/' and filter out empty strings
             const tokens = message.split('/').filter(token => token.length > 0);
 
-            const names = [];
-            const variables = [];
+            let keys = [];
+            let variables = [];
 
             for (const token of tokens) {
                 // Check if token starts with a letter (name)
@@ -927,7 +923,10 @@
 
             // Fetch saved blockly program from localstorage
             if (localStorage.getItem("blocklyWorkspaceState")) {
-                Blockly.serialization.workspaces.load(JSON.parse(localStorage.getItem("blocklyWorkspaceState")), workspace);
+                let state = JSON.parse(localStorage.getItem("blocklyWorkspaceState"));
+                console.log("Localstorage state:", state);
+
+                Blockly.serialization.workspaces.load(state, workspace);
                 console.log("Found saved Blockly workspace");
             }
         }
@@ -982,9 +981,11 @@
 
         function saveCode() {
             const state = Blockly.serialization.workspaces.save(Blockly.getMainWorkspace());
+            console.log("Saved state:", state);
 
             let exportName = "robocode_program_" + Date.now() + ".json";
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            // let dataStr = JSON.stringify(state);
             let downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
             downloadAnchorNode.setAttribute("download", exportName);
@@ -1004,9 +1005,12 @@
                 // Event listener for when the file is loaded
                 reader.onload = function (e) {
                     try {
-                        console.log('Parsed JSON:', JSON.parse(e.target.result));
+                        let state = JSON.parse(e.target.result);
+                        console.log('Loaded JSON:', state);
+
                         // TODO: fix import to Blockly canvas from JSON file
-                        // Blockly.serialization.workspaces.load(e.target.result, Blockly.getMainWorkspace());
+                        workspace.clear();
+                        Blockly.serialization.workspaces.load(state, workspace);
                     } catch (error) {
                         console.error('Error parsing JSON:', error);
                         alert('Invalid JSON file');
