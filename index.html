@@ -593,7 +593,13 @@
         // ------------------------------- WEBSOCKETS -----------------------------------------
 
         let db = {
-            "version": "0.1"
+            "version": "0.1",
+            "/temperature": 21.5,
+            "/front_distance": 10.5,
+            "/cliff": [1, 1, 1],
+            "/battery/voltage": 3.75,
+            "/battery/soc": 20.5,
+            "/motors/position": [0, 0]
         };
         let robotaddr;
         let robotsocket;
@@ -607,6 +613,8 @@
             }
 
             buildBlocklyWorkspace();
+
+            setInterval(updateTable(), 100);
         }
 
         const lastPingDOM = document.getElementById('lastPing').value;
@@ -621,7 +629,6 @@
             robotsocket.addEventListener("open", (event) => {
                 console.log(robotsocket);
                 setConnectionStatus('connected');
-                // connectionstatus.innerHTML = "Connected";
             });
             robotsocket.addEventListener("message", (event) => {
                 console.log("Received WebSocket message: " + event.data);
@@ -639,7 +646,6 @@
             robotsocket.addEventListener("error", (event) => {
                 console.error("WebSocket error: " + event.message);
                 setConnectionStatus('connecting');
-                // connectionstatus.innerHTML = "Could not connect";
             });
         }
 
@@ -706,7 +712,8 @@
 
         let workspace;
         function buildBlocklyWorkspace() {
-            // Define custom blocks
+
+            // ########## CONTROL BLOCKS ##########
             Blockly.Blocks['when_start'] = {
                 init: function () {
                     this.appendDummyInput()
@@ -715,25 +722,8 @@
                     this.setColour(160);
                 }
             };
-            Blockly.Blocks['log'] = {
-                init: function () {
-                    this.appendDummyInput()
-                        .appendField('Log')
-                        .appendField(new Blockly.FieldTextInput('message'), 'MSG');
-                    this.setPreviousStatement(true);
-                    this.setNextStatement(true);
-                    this.setColour(0);
-                }
-            };
-            Blockly.Blocks['send_websocket'] = {
-                init: function () {
-                    this.appendDummyInput('NAME')
-                        .appendField('Websocket message:')
-                        .appendField(new Blockly.FieldTextInput('default'), 'MSG');
-                    this.setPreviousStatement(true, null);
-                    this.setNextStatement(true, null);
-                    this.setColour(0);
-                }
+            javascript.javascriptGenerator.forBlock['when_start'] = function (block) {
+                return '// When START is pressed\n';
             };
 
             Blockly.Blocks['start'] = {
@@ -769,95 +759,204 @@
 
                 return code;
             };
+            // ========== CONTROL BLOCKS ==========
 
-
-            // Sensor blocks
+            // ########## SENSOR / DB BLOCKS ##########
             Blockly.Blocks['temperature'] = {
                 init: function () {
                     this.appendDummyInput('NAME')
-                        .appendField('Temperature sensor');
+                        .appendField('CPU Temperature sensor');
                     this.setOutput(true, null);
-                    this.setColour(0);
+                    this.setColour(225);
                 }
             };
             javascript.javascriptGenerator.forBlock['temperature'] = function () {
-                var code = 'db["temperature_celsius"]';
+                var code = 'db["/temperature"]';
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
 
-            Blockly.Blocks['random'] = {
+            Blockly.Blocks['front_distance'] = {
                 init: function () {
                     this.appendDummyInput('NAME')
-                        .appendField('Random sensor');
+                        .appendField('Front Distance sensor');
                     this.setOutput(true, null);
-                    this.setColour(0);
+                    this.setColour(225);
                 }
             };
-            javascript.javascriptGenerator.forBlock['random'] = function () {
-                var code = 'db["random_int"]';
+            javascript.javascriptGenerator.forBlock['front_distance'] = function () {
+                var code = 'db["/front_distance"]';
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
 
-            Blockly.Blocks['rising'] = {
+            Blockly.Blocks['battery_voltage'] = {
                 init: function () {
                     this.appendDummyInput('NAME')
-                        .appendField('Rising sensor');
+                        .appendField('Battery Voltage sensor');
                     this.setOutput(true, null);
-                    this.setColour(0);
+                    this.setColour(225);
                 }
             };
-            javascript.javascriptGenerator.forBlock['rising'] = function () {
-                var code = 'db["rising_value"]';
+            javascript.javascriptGenerator.forBlock['battery_voltage'] = function () {
+                var code = 'db["/battery/voltage"]';
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
 
-            // Define block generators
-            javascript.javascriptGenerator.forBlock['when_start'] = function (block) {
-                return '// When START is pressed\n';
+            Blockly.Blocks['battery_soc'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Battery State of Charge');
+                    this.setOutput(true, null);
+                    this.setColour(225);
+                }
             };
-            javascript.javascriptGenerator.forBlock['log'] = function (block) {
-                return `console.log("${block.getFieldValue('MSG')}");\n`;
+            javascript.javascriptGenerator.forBlock['battery_soc'] = function () {
+                var code = 'db["/battery/soc"]';
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
+
+            // TODO: implement selection of which variable is required
+            Blockly.Blocks['motor_position'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Motor Position')
+                        .appendField(new Blockly.FieldDropdown([
+                            ['x', '0'],
+                            ['y', '1']
+                        ]), 'POSITION');
+                    this.setOutput(true, null);
+                    this.setColour(225);
+                }
             };
-            javascript.javascriptGenerator.forBlock['send_websocket'] = function (block) {
-                return `socket.send("${block.getFieldValue('MSG')}");\n`;
+            javascript.javascriptGenerator.forBlock['motor_position'] = function (block) {
+                var positionNr = block.getFieldValue('POSITION');
+
+                // TODO: add position selection here, probably cast to array and then select
+                var code = `db["/motors/position"][${positionNr}]`;
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
+
+            Blockly.Blocks['cliff'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Cliff')
+                        .appendField(new Blockly.FieldDropdown([
+                            ['1 (middle)', '0'],
+                            ['2 (left)', '1'],
+                            ['3 (right)', '2']
+                        ]), 'CLIFF');
+                    this.setOutput(true, null);
+                    this.setColour(225);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['cliff'] = function (block) {
+                var cliffNr = block.getFieldValue('CLIFF');
+
+                // TODO: add position selection here, probably cast to array and then select
+                var code = `db["/cliff"][${cliffNr}]`;
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
+            // ========== SENSOR / DB BLOCKS ==========
+
+            // ########## COMMAND BLOCKS ##########
+            Blockly.Blocks['move_motor'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Move Motors');
+                    this.appendValueInput('XPOS')
+                        .setCheck('Number')
+                        .appendField('X-movement (mm):');
+                    this.appendValueInput('YPOS')
+                        .setCheck('Number')
+                        .appendField('Y-movement (mm):');
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setTooltip('');
+                    this.setHelpUrl('');
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['move_motor'] = function (block) {
+                // Get the blocks connected to the value inputs
+                let xposBlock = block.getInputTargetBlock('XPOS');
+                let yposBlock = block.getInputTargetBlock('YPOS');
+
+                // Generate code from those blocks
+                let xpos = javascript.javascriptGenerator.blockToCode(xposBlock)[0];
+                let ypos = javascript.javascriptGenerator.blockToCode(yposBlock)[0];
+
+                return `socket.send("/motors/move/${xpos}/${ypos}");\n`;
+            }
+
+            Blockly.Blocks['rotate_motor'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Rotate Motors');
+                    this.appendValueInput('ROTATE')
+                        .setCheck('Number')
+                        .appendField('Rotation (degrees):');
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setTooltip('');
+                    this.setHelpUrl('');
+                    this.setColour(0);
+                }
             };
 
-            Blockly.Blocks['ledon'] = {
+            javascript.javascriptGenerator.forBlock['rotate_motor'] = function (block) {
+                // Get the blocks connected to the value inputs
+                let rotationBlock = block.getInputTargetBlock('ROTATE');
+
+                // Generate code from those blocks
+                let angle = javascript.javascriptGenerator.blockToCode(rotationBlock)[0];
+
+                return `socket.send("/motors/rotate/${angle}");\n`;
+            }
+
+            // TODO: implement selection of LED and color via picker?
+            Blockly.Blocks['led_color'] = {
                 init: function () {
                     this.appendDummyInput('NAME')
-                        .appendField('LED on')
+                        .appendField('Set LED Color')
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setColour(0);
                 }
             };
-            javascript.javascriptGenerator.forBlock['ledon'] = function () {
-                return 'socket.send("LEDON");\n';
+            javascript.javascriptGenerator.forBlock['led_color'] = function () {
+                return 'socket.send("");\n';
             }
-            Blockly.Blocks['ledoff'] = {
+
+            Blockly.Blocks['log'] = {
                 init: function () {
-                    this.appendDummyInput('NAME')
-                        .appendField('LED off')
+                    this.appendValueInput('MSG')
+                        .setCheck(['Number', 'String'])
+                        .appendField('Log message');
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setColour(0);
                 }
             };
-            javascript.javascriptGenerator.forBlock['ledoff'] = function () {
-                return 'socket.send("LEDOFF");\n';
-            }
-            Blockly.Blocks['led'] = {
+            javascript.javascriptGenerator.forBlock['log'] = function (block, generator) {
+                var message = generator.valueToCode(block, 'MSG', javascript.Order.ATOMIC);
+                return `console.log(${message});\n`;
+            };
+
+            Blockly.Blocks['send_websocket'] = {
                 init: function () {
-                    this.appendDummyInput('NAME')
-                        .appendField('LED toggle')
+                    this.appendValueInput('MSG')
+                        .setCheck(['Number', 'String'])
+                        .appendField('Send WebSocket message');
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setColour(0);
                 }
             };
-            javascript.javascriptGenerator.forBlock['led'] = function () {
-                return 'socket.send("LED");\n';
-            }
+            javascript.javascriptGenerator.forBlock['send_websocket'] = function (block, generator) {
+                var message = generator.valueToCode(block, 'MSG', javascript.Order.ATOMIC);
+                return `socket.send("${message}");\n`;
+            };
+            // ========== COMMAND BLOCKS ==========
+
 
             const toolbox = {
                 "kind": "categoryToolbox",
@@ -866,10 +965,8 @@
                         "kind": "category",
                         "name": "Control",
                         "contents": [
-                            { kind: 'block', type: 'when_start' },
-                            { kind: 'block', type: 'log' },
-                            { kind: 'block', type: 'send_websocket' },
-                            { kind: 'block', type: 'start' },
+                            { "kind": 'block', "type": 'when_start' },
+                            { "kind": 'block', "type": 'start' },
                             { "kind": "block", "type": "controls_if" },
                             { "kind": "block", "type": "controls_ifelse" },
                             { "kind": "block", "type": "controls_repeat" },
@@ -902,18 +999,79 @@
                         "kind": "category",
                         "name": "Sensors",
                         "contents": [
-                            { kind: "block", type: "temperature" },
-                            { kind: "block", type: "random" },
-                            { kind: "block", type: "rising" },
+                            { "kind": "block", "type": "temperature" },
+                            { "kind": "block", "type": "front_distance" },
+                            { "kind": "block", "type": "battery_voltage" },
+                            { "kind": "block", "type": "battery_soc" },
+                            { "kind": "block", "type": "motor_position" },
+                            { "kind": "block", "type": "cliff" },
                         ]
                     },
                     {
                         "kind": "category",
                         "name": "Outputs",
                         "contents": [
-                            { kind: "block", type: "led" },
-                            { kind: "block", type: "ledon" },
-                            { kind: "block", type: "ledoff" },
+                            {
+                                "kind": "block", "type": "move_motor",
+                                "inputs": {
+                                    "XPOS": {
+                                        "block": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 0
+                                            }
+                                        }
+                                    },
+                                    "YPOS": {
+                                        "block": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 0
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "kind": "block", "type": "rotate_motor",
+                                "inputs": {
+                                    "ROTATE": {
+                                        "block": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 0
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            { "kind": "block", "type": "led_color" },
+                            {
+                                "kind": 'block', "type": 'log',
+                                "inputs": {
+                                    "MSG": {
+                                        "block": {
+                                            "type": "text",
+                                            "fields": {
+                                                "TEXT": "message"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "kind": 'block', "type": 'send_websocket',
+                                "inputs": {
+                                    "MSG": {
+                                        "block": {
+                                            "type": "text",
+                                            "fields": {
+                                                "TEXT": "message"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
                         ]
                     },
                 ]
@@ -924,13 +1082,11 @@
             // Fetch saved blockly program from localstorage
             if (localStorage.getItem("blocklyWorkspaceState")) {
                 let state = JSON.parse(localStorage.getItem("blocklyWorkspaceState"));
-                console.log("Localstorage state:", state);
 
                 Blockly.serialization.workspaces.load(state, workspace);
                 console.log("Found saved Blockly workspace");
             }
         }
-        buildBlocklyWorkspace();
 
         function runCode() {
             _stop = false;
