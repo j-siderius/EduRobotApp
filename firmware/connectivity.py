@@ -76,7 +76,7 @@ class ProvisioningServer:
                     machine.reset()
                 else:
                     return "Invalid credentials were entered", 400
-            return send_file("index.html")
+            return send_file("provisioning.html")
 
     async def start(self):
         self.wifi_manager.start_ap()
