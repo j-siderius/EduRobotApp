@@ -8,15 +8,17 @@ class Servo:
     
     def __init__(self, pin: int) -> None:
         self.pin = Pin(pin, Pin.OUT)
-        
         self.servo = PWM(self.pin, freq=self.PWM_FREQUENCY)
+
+        self.position = 0
         
     @staticmethod
     def _map(value: int, fromLow: int, fromHigh: int, toLow: int, toHigh: int) -> int:
         return int((value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow)
 
     def setRotation(self, angle: int) -> None:
-        mappedAngle = self._map(angle, 0, self.MAX_ANGLE, self.MIN_PULSE, self.MAX_PULSE)
+        self.position = angle
+        mappedAngle = self._map(self.position, 0, self.MAX_ANGLE, self.MIN_PULSE, self.MAX_PULSE)
         
         self.servo.duty_ns(mappedAngle*1000)
     
@@ -24,7 +26,7 @@ class Servo:
         self.setRotation(90)
 
 
-import math
+import math, asyncio
 
 class ArmManager:
     ARM1_LENGTH = 43  # in mm
@@ -35,6 +37,9 @@ class ArmManager:
         self.servo2 = Servo(servoPin2)  # joint servo
         self.servo3 = Servo(servoPin3)  # gripper servo
 
+        # Initialise all servos to default position
+        self.servo1.setRotation(0)
+        self.servo2.setRotation(90)
         self.servo3.setMiddle()
         self.gripping = False
 
@@ -61,7 +66,7 @@ class ArmManager:
         # Include fix for servo zeroing difference in theta2
         return math.degrees(theta1), (math.degrees(theta2)+90)
 
-    def moveTo(self, x: int, y: int) -> None:
+    def move_to(self, x: int, y: int) -> None:
         theta1, theta2 = self._calculate2LinkArmInverseKinematics(x, y)
         if not theta1 == None and not theta2 == None:
             self.servo1.setRotation(theta1)
@@ -74,6 +79,14 @@ class ArmManager:
         else:
             self.servo3.setRotation(10)  # TODO: calibrate this value to properly close
             self.gripping = True
+
+    def getPositions(self) -> tuple[int, int, bool]:
+        return self.servo1.position, self.servo2.position, self.gripping
+
+    async def polling(self, websocket_message_broadcast):
+        while True:
+            await asyncio.sleep(1/1)  # update rate at 1Hz
+            await websocket_message_broadcast(f"/servos/position/{self.servo1.position}/{self.servo2.position}/{self.servo3.position}")
 
               
 if __name__ == "__main__":
@@ -89,9 +102,9 @@ if __name__ == "__main__":
 
     arm.grip()
     time.sleep(1)
-    arm.moveTo(40, 40)
+    arm.move_to(40, 40)
     time.sleep(1)
-    arm.moveTo(80, 0)
+    arm.move_to(80, 0)
 
     # servo1 = Servo(PIN_SERVO1)
     # servo2 = Servo(PIN_SERVO2)
