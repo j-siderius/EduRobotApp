@@ -716,18 +716,6 @@
         function buildBlocklyWorkspace() {
 
             // ########## CONTROL BLOCKS ##########
-            Blockly.Blocks['when_start'] = {
-                init: function () {
-                    this.appendDummyInput()
-                        .appendField("When START is pressed");
-                    this.setNextStatement(true);
-                    this.setColour(160);
-                }
-            };
-            javascript.javascriptGenerator.forBlock['when_start'] = function (block) {
-                return '// When START is pressed\n';
-            };
-
             Blockly.Blocks['start'] = {
                 init: function () {
                     this.appendDummyInput()
@@ -857,6 +845,39 @@
                 var code = `db["cliff"][${cliffNr}]`;
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
+
+            Blockly.Blocks['arm'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Arm position')
+                        .appendField(new Blockly.FieldDropdown([
+                            ['1 (base)', '0'],
+                            ['2 (joint)', '1']
+                        ]), 'ARM');
+                    this.setOutput(true, null);
+                    this.setColour(225);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['arm'] = function (block) {
+                var armNr = block.getFieldValue('ARM');
+
+                // TODO: add position selection here, probably cast to array and then select
+                var code = `db["servos,position"][${armNr}]`;
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
+
+            Blockly.Blocks['gripper'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Gripper state');
+                    this.setOutput(true, null);
+                    this.setColour(225);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['gripper'] = function () {
+                var code = `db["servos,position"][2]`;
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
             // ========== SENSOR / DB BLOCKS ==========
 
             // ########## COMMAND BLOCKS ##########
@@ -906,7 +927,6 @@
                     this.setColour(0);
                 }
             };
-
             javascript.javascriptGenerator.forBlock['rotate_motor'] = function (block) {
                 // Get the blocks connected to the value inputs
                 let rotationBlock = block.getInputTargetBlock('ROTATE');
@@ -915,6 +935,37 @@
                 let angle = javascript.javascriptGenerator.blockToCode(rotationBlock)[0];
 
                 return `robotsocket.send("/motors/rotate/${angle}");\n`;
+            }
+
+            Blockly.Blocks['move_arm'] = {
+                init: function () {
+                    this.appendDummyInput('DESCRIPTION')
+                        .appendField('Move Arm to');
+                    this.appendValueInput('XPOS')
+                        .setCheck('Number');
+                    this.appendDummyInput('DESCRIPTION2')
+                        .appendField('X (mm) and');
+                    this.appendValueInput('YPOS')
+                        .setCheck('Number');
+                    this.appendEndRowInput('DESCRIPTION3')
+                        .appendField('Y (mm)');
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setTooltip('');
+                    this.setHelpUrl('');
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['move_arm'] = function (block) {
+                // Get the blocks connected to the value inputs
+                let xposBlock = block.getInputTargetBlock('XPOS');
+                let yposBlock = block.getInputTargetBlock('YPOS');
+
+                // Generate code from those blocks
+                let xpos = javascript.javascriptGenerator.blockToCode(xposBlock)[0];
+                let ypos = javascript.javascriptGenerator.blockToCode(yposBlock)[0];
+
+                return `robotsocket.send("/servos/move/${xpos}/${ypos}");\n`;
             }
 
             // TODO: implement selection of LED and color via picker?
@@ -967,7 +1018,7 @@
                 init: function () {
                     this.appendValueInput('MSG')
                         .setCheck(['Number', 'String'])
-                        .appendField('Send WebSocket message');
+                        .appendField('[DEBUG] Send WebSocket message');
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setColour(0);
@@ -987,10 +1038,7 @@
                         "kind": "category",
                         "name": "Control",
                         "contents": [
-                            { "kind": 'block', "type": 'when_start' },
                             { "kind": 'block', "type": 'start' },
-                            { "kind": "block", "type": "controls_if" },
-                            { "kind": "block", "type": "controls_ifelse" },
                             { "kind": "block", "type": "controls_repeat" },
                             { "kind": "block", "type": "controls_whileUntil" },
                             { "kind": "block", "type": "controls_flow_statements" },
@@ -1000,9 +1048,10 @@
                         "kind": "category",
                         "name": "Logic",
                         "contents": [
+                            { "kind": "block", "type": "controls_if" },
+                            { "kind": "block", "type": "controls_ifelse" },
                             { "kind": "block", "type": "logic_negate" },
                             { "kind": "block", "type": "logic_operation" },
-                            { "kind": "block", "type": "logic_boolean" },
                             { "kind": "block", "type": "logic_compare" },
                         ]
                     },
@@ -1014,7 +1063,7 @@
                             { "kind": "block", "type": "variables_set" },
                             { "kind": "block", "type": "math_number" },
                             { "kind": "block", "type": "text" },
-                            { "kind": "block", "type": "math_random_int" },
+                            { "kind": "block", "type": "logic_boolean" },
                         ]
                     },
                     {
@@ -1027,6 +1076,8 @@
                             { "kind": "block", "type": "battery_soc" },
                             { "kind": "block", "type": "motor_position" },
                             { "kind": "block", "type": "cliff" },
+                            { "kind": "block", "type": "arm" },
+                            { "kind": "block", "type": "gripper" },
                         ]
                     },
                     {
@@ -1058,6 +1109,27 @@
                                 "kind": "block", "type": "rotate_motor",
                                 "inputs": {
                                     "ROTATE": {
+                                        "block": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 0
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "kind": "block", "type": "move_arm",
+                                "inputs": {
+                                    "XPOS": {
+                                        "block": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 0
+                                            }
+                                        }
+                                    },
+                                    "YPOS": {
                                         "block": {
                                             "type": "math_number",
                                             "fields": {
