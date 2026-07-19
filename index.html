@@ -441,6 +441,94 @@
         .blocklyToolboxCategoryLabel {
             color: #2c3e50;
         }
+
+        /* Blockly Dialog Styling */
+        .blocklyDialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 0;
+            background-color: white;
+            max-width: 90%;
+            width: 400px;
+        }
+
+        .blocklyDialog::backdrop {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .blocklyDialogForm {
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            gap: 16px;
+        }
+
+        .blocklyDialogPrompt {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .blocklyDialogInput {
+            padding: 12px 14px;
+            border: 1px solid #d8dce0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .blocklyDialogInput:focus {
+            outline: none;
+            border-color: #2c2c2c;
+            box-shadow: 0 0 0 3px rgba(44, 44, 44, 0.1);
+        }
+
+        .blocklyDialogButtonRow {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .blocklyDialogConfirmButton,
+        .blocklyDialogCancelButton {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .blocklyDialogConfirmButton {
+            background-color: #2c2c2c;
+            color: white;
+        }
+
+        .blocklyDialogConfirmButton:hover {
+            background-color: #000000;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .blocklyDialogCancelButton {
+            background-color: #e8ecf1;
+            color: #2c3e50;
+        }
+
+        .blocklyDialogCancelButton:hover {
+            background-color: #d8e0ea;
+        }
     </style>
     <!-- Load Blockly core -->
     <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
@@ -1058,6 +1146,7 @@
                     {
                         "kind": "category",
                         "name": "Variables",
+                        "custom": "VARIABLE",
                         "contents": [
                             { "kind": "block", "type": "variables_get" },
                             { "kind": "block", "type": "variables_set" },
@@ -1184,6 +1273,10 @@
             };
 
             workspace = Blockly.inject('blocklyDiv', { toolbox: toolbox, sounds: false });
+
+            workspace.registerButtonCallback('CREATE_VARIABLE', function (button) {
+                Blockly.Variables.createVariableButtonHandler(button.getTargetWorkspace(), null);
+            });
 
             // Fetch saved blockly program from localstorage
             if (localStorage.getItem("blocklyWorkspaceState")) {
