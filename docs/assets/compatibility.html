@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexabot compatibility check</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .property {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Hexabot compatibility check</h1>
+    <div id="javascriptsupport" class="property">❌ Javascript is not supported</div>
+    <div id="localstoragesupport" class="property">❌ Localstorage is not supported</div>
+    <div id="evalsupport" class="property">❌ Eval is not supported</div>
+    <div id="websocketsupport" class="property">❌ WebSockets are not supported</div>
+    <div id="blocklyscriptsupport" class="property">❌ Blockly scripts are not supported</div>
+
+    <script>
+        const javascriptEL = document.getElementById('javascriptsupport').innerHTML = '✔️ Javascript is supported';
+
+
+        const websocketEl = document.getElementById('websocketsupport');
+        const supported = 'WebSocket' in window;
+        if (supported) {
+            websocketEl.innerHTML = '✔️ WebSockets are supported';
+        } else {
+            websocketEl.innerHTML = '❌ WebSockets are not supported';
+        }
+
+
+        const blocklyEl = document.getElementById('blocklyscriptsupport');
+        async function checkBlockly() {
+            try {
+                const response = await fetch("https://unpkg.com/blockly/blockly_compressed.js");
+                if (response.ok) {
+                    blocklyEl.innerHTML = '✔️ Blockly scripts are supported';
+                } else {
+                    blocklyEl.innerHTML = '❌ Blockly scripts are not supported';
+                }
+            } catch (error) {
+                console.log("Blockly error:", error.message);
+                blocklyEl.innerHTML = '❌ Blockly scripts are not supported';
+            }
+        }
+        checkBlockly();
+
+
+        const localstorageEl = document.getElementById('localstoragesupport');
+        try {
+            localStorage.setItem('test', 'test');
+            localStorage.removeItem('test');
+            localstorageEl.innerHTML = '✔️ Localstorage is supported';
+        } catch (error) {
+            console.log("localStorage error:", error.message);
+            localstorageEl.innerHTML = '❌ Localstorage is not supported';
+        }
+
+
+        const evalEl = document.getElementById('evalsupport');
+        try {
+            eval("1+1");
+            evalEl.innerHTML = '✔️ Eval is supported';
+        } catch (error) {
+            console.log("eval() error:", error.message);
+            evalEl.innerHTML = '❌ Eval is not supported';
+        }
+    </script>
+</body>
+
+</html>
