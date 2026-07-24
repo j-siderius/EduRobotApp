@@ -10,7 +10,7 @@ from microdot.websocket import with_websocket
 
 class WifiManager:
     CONFIG_FILE = "wifi_config.json"
-    AP_SSID = "RoboConfig"
+    AP_SSID = "HexaConfig"
     AP_PASSWORD = "12345678"
 
     def __init__(self):

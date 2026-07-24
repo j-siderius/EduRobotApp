@@ -195,8 +195,8 @@ class DisplayManager:
             self.display.text(f'IP:{ip_addr}', 0, 40)
         elif wifi_status == "ap":
             self.display.text('Connect to AP', 0, 30)
-            self.display.text('SSID:RoboConfig', 0, 40)
-            vdisplay.text('PASS:12345678', 0, 50)
+            self.display.text('SSID:HexaConfig', 0, 40)
+            self.display.text('PASS:12345678', 0, 50)
         else:
             self.display.text('WiFi:Unknown', 0, 30)
              
@@ -218,7 +218,7 @@ if __name__ == "__main__":
 
     battery_percentage = 79
     wifi_status = "connected"
-    wifi_addr = "192.168.1.203"
+    wifi_addr = "192.168.1.???"
     
     display.fill(0)
     display.text('--- EduRobot ---', 0, 0)
@@ -232,7 +232,7 @@ if __name__ == "__main__":
         display.text(f'IP:{wifi_addr}', 0, 30)
     elif wifi_status == "ap" and wifi_addr != "":
         display.text('Connect to AP', 0, 20)
-        display.text('SSID:RoboConfig', 0, 30)
+        display.text('SSID:HexaConfig', 0, 30)
         display.text('PASS:12345678', 0, 40)
         display.text(f'IP:{wifi_addr}', 0, 50)
     else:
