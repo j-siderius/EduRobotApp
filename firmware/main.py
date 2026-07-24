@@ -4,7 +4,7 @@ from message_manager import MessageManager
 
 from cliff import CliffManager
 from max17043 import max1704x
-from servo import Servo
+from servo import Servo, ArmManager
 from motor import MotorManager
 from ws2812b import WS2812B
 from ssd1306 import DisplayManager
@@ -37,10 +37,8 @@ async def main():
         serverTask = asyncio.create_task(server.start())
         
         cliffs = CliffManager(config.PIN_CLIFF1, config.PIN_CLIFF2, config.PIN_CLIFF3)
-        
-        servo1 = Servo(config.PIN_SERVO1)
-        servo2 = Servo(config.PIN_SERVO2)
-        servo3 = Servo(config.PIN_SERVO3)
+
+        arm = ArmManager(config.PIN_SERVO1, config.PIN_SERVO2, config.PIN_SERVO3)
         
         motors = MotorManager(
             config.PIN_MOTOR11, config.PIN_MOTOR12, config.PIN_ENCODER11, config.PIN_ENCODER12,
@@ -62,9 +60,8 @@ async def main():
         message_manager.add_message(['motors', 'move'], motors.move_to)
         message_manager.add_message(['motors', 'rotate'], motors.rotate)
         message_manager.add_message(['motors', 'stop'], motors.stop)
-        # TODO: add functions that are currently missing
-        # message_manager.add_message(['servos', 'move'], )
-        # message_manager.add_message(['servos', 'grip'], )
+        message_manager.add_message(['servos', 'move'], arm.move_to)
+        message_manager.add_message(['servos', 'grip'], arm.grip)
         message_manager.add_message(['leds', 'one'], led1.setFullColor)
         message_manager.add_message(['leds', 'two'], led2.setFullColor)
         
@@ -75,6 +72,7 @@ async def main():
         cliff_update = asyncio.create_task(cliffs.polling(server.messageBroadcast))
         battery_update = asyncio.create_task(fuelgauge.polling(server.messageBroadcast))
         motor_position_update = asyncio.create_task(motors.polling(server.messageBroadcast))
+        servo_position_update = asyncio.create_task(arm.polling(server.messageBroadcast))
         
         await serverTask
 

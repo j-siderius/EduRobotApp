@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robot Programming Interface</title>
+    <title>Hexabot Programming Interface</title>
     <style>
         * {
             margin: 0;
@@ -441,6 +441,94 @@
         .blocklyToolboxCategoryLabel {
             color: #2c3e50;
         }
+
+        /* Blockly Dialog Styling */
+        .blocklyDialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 0;
+            background-color: white;
+            max-width: 90%;
+            width: 400px;
+        }
+
+        .blocklyDialog::backdrop {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .blocklyDialogForm {
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            gap: 16px;
+        }
+
+        .blocklyDialogPrompt {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .blocklyDialogInput {
+            padding: 12px 14px;
+            border: 1px solid #d8dce0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .blocklyDialogInput:focus {
+            outline: none;
+            border-color: #2c2c2c;
+            box-shadow: 0 0 0 3px rgba(44, 44, 44, 0.1);
+        }
+
+        .blocklyDialogButtonRow {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .blocklyDialogConfirmButton,
+        .blocklyDialogCancelButton {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .blocklyDialogConfirmButton {
+            background-color: #2c2c2c;
+            color: white;
+        }
+
+        .blocklyDialogConfirmButton:hover {
+            background-color: #000000;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .blocklyDialogCancelButton {
+            background-color: #e8ecf1;
+            color: #2c3e50;
+        }
+
+        .blocklyDialogCancelButton:hover {
+            background-color: #d8e0ea;
+        }
     </style>
     <!-- Load Blockly core -->
     <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
@@ -450,13 +538,16 @@
     <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
     <!-- Load a message file -->
     <script src="https://unpkg.com/blockly/msg/en.js"></script>
+
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 128 128'%3E%3Cpath d='M12.53 53.05c-4.57.01-8.28 3.72-8.28 8.29v38.38a8.297 8.297 0 0 0 8.28 8.28h5.55V53zM115.72 53.05c4.57.01 8.28 3.72 8.28 8.29v38.38c-.01 4.57-3.71 8.28-8.28 8.29h-5.55v-55z' style='fill:%23c62828'/%3E%3Cpath d='m113.17 54.41-.12-10c-.03-4.3-3.53-7.77-7.83-7.75H67.05V23.25c5.11-1.69 7.89-7.2 6.2-12.31s-7.2-7.89-12.31-6.2-7.89 7.2-6.2 12.31a9.74 9.74 0 0 0 6.2 6.2v13.46H22.78c-4.28.01-7.75 3.47-7.78 7.75v71.78c.03 4.28 3.5 7.74 7.78 7.76h82.44c4.3.01 7.8-3.46 7.83-7.76v-7.37h.12z' style='fill:%2390a4ae'/%3E%3Cpath d='M64 18c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4' style='fill:%23c62828'/%3E%3ClinearGradient id='a' x1='64.005' x2='64.005' y1='22.44' y2='35.55' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.12' style='stop-color:%23e0e0e0'/%3E%3Cstop offset='.52' style='stop-color:%23fff'/%3E%3Cstop offset='1' style='stop-color:%23eaeaea'/%3E%3C/linearGradient%3E%3Cpath d='M44.15 94.45h39.71c3.46 0 6.27 2.81 6.27 6.27v.57c0 3.46-2.81 6.27-6.27 6.27H44.15c-3.46 0-6.27-2.81-6.27-6.27v-.57c0-3.46 2.81-6.27 6.27-6.27' style='fill:url(%23a)'/%3E%3ClinearGradient id='b' x1='54.85' x2='54.85' y1='22.44' y2='35.53' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' style='stop-color:%23333'/%3E%3Cstop offset='.55' style='stop-color:%23666'/%3E%3Cstop offset='1' style='stop-color:%23333'/%3E%3C/linearGradient%3E%3Cpath d='M53.67 94.47h2.36v13.09h-2.36z' style='fill:url(%23b)'/%3E%3ClinearGradient id='c' x1='64.06' x2='64.06' y1='22.44' y2='35.53' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' style='stop-color:%23333'/%3E%3Cstop offset='.55' style='stop-color:%23666'/%3E%3Cstop offset='1' style='stop-color:%23333'/%3E%3C/linearGradient%3E%3Cpath d='M62.88 94.47h2.36v13.09h-2.36z' style='fill:url(%23c)'/%3E%3ClinearGradient id='d' x1='73.15' x2='73.15' y1='22.44' y2='35.53' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' style='stop-color:%23333'/%3E%3Cstop offset='.55' style='stop-color:%23666'/%3E%3Cstop offset='1' style='stop-color:%23333'/%3E%3C/linearGradient%3E%3Cpath d='M71.97 94.47h2.36v13.09h-2.36z' style='fill:url(%23d)'/%3E%3ClinearGradient id='e' x1='82.8' x2='82.8' y1='22.44' y2='35.53' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' style='stop-color:%23333'/%3E%3Cstop offset='.55' style='stop-color:%23666'/%3E%3Cstop offset='1' style='stop-color:%23333'/%3E%3C/linearGradient%3E%3Cpath d='M81.62 94.47h2.36v13.09h-2.36z' style='fill:url(%23e)'/%3E%3ClinearGradient id='f' x1='45.2' x2='45.2' y1='22.46' y2='35.55' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' style='stop-color:%23333'/%3E%3Cstop offset='.55' style='stop-color:%23666'/%3E%3Cstop offset='1' style='stop-color:%23333'/%3E%3C/linearGradient%3E%3Cpath d='M44.02 94.45h2.36v13.09h-2.36z' style='fill:url(%23f)'/%3E%3Cpath d='M64 85.33h-5.33c-.55 0-1-.45-1-1 0-.16.04-.31.11-.45l2.74-5.41 2.59-4.78a.996.996 0 0 1 1.76 0l2.61 5 2.71 5.19c.25.49.06 1.09-.43 1.35-.14.07-.29.11-.45.11z' style='fill:%23c62828'/%3E%3CradialGradient id='g' cx='42.64' cy='63.19' r='11.5' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.48' style='stop-color:%23fff'/%3E%3Cstop offset='.77' style='stop-color:%23fdfdfd'/%3E%3Cstop offset='.88' style='stop-color:%23f6f6f6'/%3E%3Cstop offset='.96' style='stop-color:%23ebebeb'/%3E%3Cstop offset='1' style='stop-color:%23e0e0e0'/%3E%3C/radialGradient%3E%3Ccircle cx='42.64' cy='66.81' r='11.5' style='fill:url(%23g)'/%3E%3ClinearGradient id='h' x1='30.14' x2='55.14' y1='63.19' y2='63.19' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' style='stop-color:%23333'/%3E%3Cstop offset='.55' style='stop-color:%23666'/%3E%3Cstop offset='1' style='stop-color:%23333'/%3E%3C/linearGradient%3E%3Ccircle cx='42.64' cy='66.81' r='11.5' style='fill:none;stroke:url(%23h);stroke-width:2;stroke-miterlimit:10'/%3E%3CradialGradient id='i' cx='84.95' cy='63.22' r='11.5' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.48' style='stop-color:%23fff'/%3E%3Cstop offset='.77' style='stop-color:%23fdfdfd'/%3E%3Cstop offset='.88' style='stop-color:%23f6f6f6'/%3E%3Cstop offset='.96' style='stop-color:%23ebebeb'/%3E%3Cstop offset='1' style='stop-color:%23e0e0e0'/%3E%3C/radialGradient%3E%3Cpath d='M85 55.28c-6.35 0-11.5 5.15-11.5 11.5s5.15 11.5 11.5 11.5 11.5-5.15 11.5-11.5c-.01-6.35-5.15-11.49-11.5-11.5' style='fill:url(%23i)'/%3E%3ClinearGradient id='j' x1='72.45' x2='97.45' y1='63.22' y2='63.22' gradientTransform='matrix(1 0 0 -1 0 130)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' style='stop-color:%23333'/%3E%3Cstop offset='.55' style='stop-color:%23666'/%3E%3Cstop offset='1' style='stop-color:%23333'/%3E%3C/linearGradient%3E%3Cpath d='M85 55.28c-6.35 0-11.5 5.15-11.5 11.5s5.15 11.5 11.5 11.5 11.5-5.15 11.5-11.5c-.01-6.35-5.15-11.49-11.5-11.5z' style='fill:none;stroke:url(%23j);stroke-width:2;stroke-miterlimit:10'/%3E%3C/svg%3E">
 </head>
 
 <body>
     <header>
         <div class="header-content">
             <div class="header-left">
-                <div class="logo">RoboCode</div>
+                <div class="logo">Hexabot Code</div>
                 <nav>
                     <button class="tab-button active" data-tab="programming">Programming</button>
                     <button class="tab-button" data-tab="data">Data</button>
@@ -483,7 +574,7 @@
         <div id="programming-tab" class="tab-content active">
             <div class="canvas-container">
                 <div class="canvas-header">
-                    <h2>Blockly Programming Canvas</h2>
+                    <h2>Hexabot Programming Interface</h2>
                     <div class="canvas-controls">
                         <button class="btn btn-secondary"
                             onclick="document.getElementById('jsonFileInput').click();">Load code</button>
@@ -505,7 +596,7 @@
         <div id="data-tab" class="tab-content">
             <div class="data-container">
                 <div class="data-header">
-                    <h2>Robot Variables</h2>
+                    <h2>Hexabot Data</h2>
                 </div>
                 <table>
                     <thead>
@@ -522,7 +613,7 @@
         <!-- Settings Tab -->
         <div id="settings-tab" class="tab-content">
             <div class="settings-container">
-                <h2>Robot Settings</h2>
+                <h2>Hexabot Settings</h2>
                 <form id="settings-form">
                     <div class="form-group">
                         <label for="robot-address">Robot Address</label>
@@ -716,18 +807,6 @@
         function buildBlocklyWorkspace() {
 
             // ########## CONTROL BLOCKS ##########
-            Blockly.Blocks['when_start'] = {
-                init: function () {
-                    this.appendDummyInput()
-                        .appendField("When START is pressed");
-                    this.setNextStatement(true);
-                    this.setColour(160);
-                }
-            };
-            javascript.javascriptGenerator.forBlock['when_start'] = function (block) {
-                return '// When START is pressed\n';
-            };
-
             Blockly.Blocks['start'] = {
                 init: function () {
                     this.appendDummyInput()
@@ -857,6 +936,39 @@
                 var code = `db["cliff"][${cliffNr}]`;
                 return [code, Blockly.JavaScript.ORDER_MEMBER];
             }
+
+            Blockly.Blocks['arm'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Arm position')
+                        .appendField(new Blockly.FieldDropdown([
+                            ['1 (base)', '0'],
+                            ['2 (joint)', '1']
+                        ]), 'ARM');
+                    this.setOutput(true, null);
+                    this.setColour(225);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['arm'] = function (block) {
+                var armNr = block.getFieldValue('ARM');
+
+                // TODO: add position selection here, probably cast to array and then select
+                var code = `db["servos,position"][${armNr}]`;
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
+
+            Blockly.Blocks['gripper'] = {
+                init: function () {
+                    this.appendDummyInput('NAME')
+                        .appendField('Gripper state');
+                    this.setOutput(true, null);
+                    this.setColour(225);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['gripper'] = function () {
+                var code = `db["servos,position"][2]`;
+                return [code, Blockly.JavaScript.ORDER_MEMBER];
+            }
             // ========== SENSOR / DB BLOCKS ==========
 
             // ########## COMMAND BLOCKS ##########
@@ -906,7 +1018,6 @@
                     this.setColour(0);
                 }
             };
-
             javascript.javascriptGenerator.forBlock['rotate_motor'] = function (block) {
                 // Get the blocks connected to the value inputs
                 let rotationBlock = block.getInputTargetBlock('ROTATE');
@@ -915,6 +1026,37 @@
                 let angle = javascript.javascriptGenerator.blockToCode(rotationBlock)[0];
 
                 return `robotsocket.send("/motors/rotate/${angle}");\n`;
+            }
+
+            Blockly.Blocks['move_arm'] = {
+                init: function () {
+                    this.appendDummyInput('DESCRIPTION')
+                        .appendField('Move Arm to');
+                    this.appendValueInput('XPOS')
+                        .setCheck('Number');
+                    this.appendDummyInput('DESCRIPTION2')
+                        .appendField('X (mm) and');
+                    this.appendValueInput('YPOS')
+                        .setCheck('Number');
+                    this.appendEndRowInput('DESCRIPTION3')
+                        .appendField('Y (mm)');
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setTooltip('');
+                    this.setHelpUrl('');
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['move_arm'] = function (block) {
+                // Get the blocks connected to the value inputs
+                let xposBlock = block.getInputTargetBlock('XPOS');
+                let yposBlock = block.getInputTargetBlock('YPOS');
+
+                // Generate code from those blocks
+                let xpos = javascript.javascriptGenerator.blockToCode(xposBlock)[0];
+                let ypos = javascript.javascriptGenerator.blockToCode(yposBlock)[0];
+
+                return `robotsocket.send("/servos/move/${xpos}/${ypos}");\n`;
             }
 
             // TODO: implement selection of LED and color via picker?
@@ -967,7 +1109,7 @@
                 init: function () {
                     this.appendValueInput('MSG')
                         .setCheck(['Number', 'String'])
-                        .appendField('Send WebSocket message');
+                        .appendField('[DEBUG] Send WebSocket message');
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setColour(0);
@@ -987,10 +1129,7 @@
                         "kind": "category",
                         "name": "Control",
                         "contents": [
-                            { "kind": 'block', "type": 'when_start' },
                             { "kind": 'block', "type": 'start' },
-                            { "kind": "block", "type": "controls_if" },
-                            { "kind": "block", "type": "controls_ifelse" },
                             { "kind": "block", "type": "controls_repeat" },
                             { "kind": "block", "type": "controls_whileUntil" },
                             { "kind": "block", "type": "controls_flow_statements" },
@@ -1000,21 +1139,23 @@
                         "kind": "category",
                         "name": "Logic",
                         "contents": [
+                            { "kind": "block", "type": "controls_if" },
+                            { "kind": "block", "type": "controls_ifelse" },
                             { "kind": "block", "type": "logic_negate" },
                             { "kind": "block", "type": "logic_operation" },
-                            { "kind": "block", "type": "logic_boolean" },
                             { "kind": "block", "type": "logic_compare" },
                         ]
                     },
                     {
                         "kind": "category",
                         "name": "Variables",
+                        "custom": "VARIABLE",
                         "contents": [
                             { "kind": "block", "type": "variables_get" },
                             { "kind": "block", "type": "variables_set" },
                             { "kind": "block", "type": "math_number" },
                             { "kind": "block", "type": "text" },
-                            { "kind": "block", "type": "math_random_int" },
+                            { "kind": "block", "type": "logic_boolean" },
                         ]
                     },
                     {
@@ -1027,6 +1168,8 @@
                             { "kind": "block", "type": "battery_soc" },
                             { "kind": "block", "type": "motor_position" },
                             { "kind": "block", "type": "cliff" },
+                            { "kind": "block", "type": "arm" },
+                            { "kind": "block", "type": "gripper" },
                         ]
                     },
                     {
@@ -1058,6 +1201,27 @@
                                 "kind": "block", "type": "rotate_motor",
                                 "inputs": {
                                     "ROTATE": {
+                                        "block": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 0
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "kind": "block", "type": "move_arm",
+                                "inputs": {
+                                    "XPOS": {
+                                        "block": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 0
+                                            }
+                                        }
+                                    },
+                                    "YPOS": {
                                         "block": {
                                             "type": "math_number",
                                             "fields": {
@@ -1112,6 +1276,10 @@
             };
 
             workspace = Blockly.inject('blocklyDiv', { toolbox: toolbox, sounds: false });
+
+            workspace.registerButtonCallback('CREATE_VARIABLE', function (button) {
+                Blockly.Variables.createVariableButtonHandler(button.getTargetWorkspace(), null);
+            });
 
             // Fetch saved blockly program from localstorage
             if (localStorage.getItem("blocklyWorkspaceState")) {
