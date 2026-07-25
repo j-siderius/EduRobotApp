@@ -372,24 +372,24 @@ Different types of blocks are available in the Programming interface:
 #### Control blocks
 
 <p align="left">
-    <img src="assets/starting_block.png" width="auto" height="75px" alt="">
+    <img src="assets/starting_block.png" width="auto" height="70vh" alt="">
     The Starting block provides a staring point to most robot programs. The block contains two containers. The Setup sub-block runs once at the start of the program, for example to configure variables or robot settings. The Loop sub-block runs continuously and infinitely after Setup is finished. This is used for tasks that should run all the time, for example obstacle avoidance or robot arm positioning. The Loop can be stopped by clicking the "Stop Code" button in the programming interface.
 </p>
 
 <p align="left">
-    <img src="assets/repeatn_block.png" width="auto" height="45px" alt="">
+    <img src="assets/repeatn_block.png" width="auto" height="50vh" alt="">
     The Repeat n times block creates a defined loop that executes the blocks inside of the container n times. For example, if the block is set to Repeat 4 times, the blocks inside will execute exactly four times before continuing to blocks below the Repeat n times block.
 </p>
 
 <p align="left">
-    <img src="assets/repeatwhile_block.png" width="auto" height="45px" alt="">
+    <img src="assets/repeatwhile_block.png" width="auto" height="50vh" alt="">
     The Repeat while block creates a repeat loop that runs the blocks inside the container until the loop ends—either when the provided condition becomes false or when the loop is terminated using a Break out of loop block. If you use this block incorrectly (for example, by providing a condition that never becomes false and not including any break/stop mechanism), your program can become stuck in an infinite loop.
     <br>
     This block has an alternative mode called Repeat until, which works similar to the Repeat while but it runs the blocks inside the container until the provided condition becomes true or when the loop is terminated using a Break out of loop block.
 </p>
 
 <p align="left">
-    <img src="assets/breakout_block.png" width="auto" height="20px" alt="">
+    <img src="assets/breakout_block.png" width="auto" height="20vh" alt="">
     The Break out of loop block works together with the Repeat while block. If the block is triggered, any running Repeat while or Repeat until loop will terminate and continue with the block after it.
     <br>
     This block has an alternative mode called Continue next iteration of loop, which skips all blocks underneath this one and continues with the loop of a Repeat while or Repeat until block from the start. It does not terminate the loop, but rather terminate the current loop cycle.
@@ -398,29 +398,29 @@ Different types of blocks are available in the Programming interface:
 #### Logic blocks
 
 <p align="left">
-    <img src="assets/if_block.png" width="auto" height="45px" alt="">
+    <img src="assets/if_block.png" width="auto" height="50vh" alt="">
     The If block provides a way to check conditional statements and execute blocks inside the container if the statement evaluates to true or 1. This block is often used in combination with the Logical Operation or Logical Comparison blocks. The gear-icon (settings) enables the addition of (multiple) else statements that extend the block. For more information, look at the If Else block below.
 </p>
 
 <p align="left">
-    <img src="assets/ifelse_block.png" width="auto" height="75px" alt="">
+    <img src="assets/ifelse_block.png" width="auto" height="70vh" alt="">
     The If Else block is similar to the If block, since it can check conditional statements and execute blocks inside the first container. Alternatively, if the statement evaluates as false or 0, the blocks inside of the second container are executed.
 </p>
 
 <p align="left">
-    <img src="assets/not_block.png" width="auto" height="15px" alt="">
+    <img src="assets/not_block.png" width="auto" height="20vh" alt="">
     The Not block can be used to invert a conditional statement. If the statement normally evaluates to true or 1 value, the Not block can negate this and turn it into false or 0. Vice versa, if the statement normally evaluates to false or 0, the block negates this into true or 1.
 </p>
 
 <p align="left">
-    <img src="assets/logicoperation_block.png" width="auto" height="15px" alt="">
+    <img src="assets/logicoperation_block.png" width="auto" height="20vh" alt="">
     The Logical Operation block can be used to combine statements and conditions. The block can be used in the AND mode, needing two true statements to evaluate to true (the logic table for AND can be found on <a href="https://en.wikipedia.org/wiki/AND_gate" target="_blank">Wikipedia - AND logic gate</a> (links to an external site)).
     <br>
     Alternatively, this block can function in the OR mode, where either of the two statements need to be true in order to evaluate to true (the logic table for OR can be found on <a href="https://en.wikipedia.org/wiki/OR_gate" target="_blank">Wikipedia - OR logic gate</a> (links to an external site)).
 </p>
 
 <p align="left">
-    <img src="assets/logiccompare_block.png" width="auto" height="15px" alt="">
+    <img src="assets/logiccompare_block.png" width="auto" height="20vh" alt="">
     The Logical Comparison block can be used compare values using different operators. There are different logic operators included:
 <ul>
   <li>Equals (=)</li>
@@ -442,86 +442,86 @@ https://en.wikipedia.org/wiki/Greater-than_sign#Greater-than_sign_with_equals_si
 #### Variable blocks
 
 <p align="left">
-    <img src="assets/createvariable_block.png" width="auto" height="15px" alt="">
+    <img src="assets/createvariable_block.png" width="auto" height="20vh" alt="">
     The Create Variable button can be used to create a new named variable. Multiple different variables can be made and used throughout the program using the Get Variable and Set Variable blocks below. Variables can be used to transport and reuse information between different parts of the program.
 </p>
 
 <p align="left">
-    <img src="assets/getvariable_block.png" width="auto" height="15px" alt="">
+    <img src="assets/getvariable_block.png" width="auto" height="20vh" alt="">
     The Get Variable block allows the reading of variables created with the Create Variable button above. It can be used to connect variables into other blocks, like the If block, or output blocks like Move Motors.
 </p>
 
 <p align="left">
-    <img src="assets/setvariable_block.png" width="auto" height="15px" alt="">
+    <img src="assets/setvariable_block.png" width="auto" height="20vh" alt="">
     The Set Variable block allows the changing of variables created with the Create Variable button above. Variables can be set to different variable types (Number, Text and Boolean) and can be re-used and changed over time.
 </p>
 
 <p align="left">
-    <img src="assets/numbervariable_block.png" width="auto" height="15px" alt="">
+    <img src="assets/numbervariable_block.png" width="auto" height="20vh" alt="">
     The Number Variable block provides a way to input numbers into the program. The number can be assigned to a variable, directly input into conditional statements or output blocks.
 </p>
 
 <p align="left">
-    <img src="assets/textvariable_block.png" width="auto" height="15px" alt="">
+    <img src="assets/textvariable_block.png" width="auto" height="20vh" alt="">
     The Text Variable block provides a way to input text into the program. The text can be assigned to a variable, directly input into conditional statements or output blocks.
 </p>
 
 <p align="left">
-    <img src="assets/booleanvariable_block.png" width="auto" height="15px" alt="">
+    <img src="assets/booleanvariable_block.png" width="auto" height="20vh" alt="">
     The Boolean Variable block provides a way to input boolean (true or false) into the program. The boolean can be assigned to a variable, directly input into conditional statements or output blocks.
 </p>
 
 #### Sensor blocks
 
 <p align="left">
-    <img src="assets/cputemperature_block.png" width="auto" height="15px" alt="">
+    <img src="assets/cputemperature_block.png" width="auto" height="20vh" alt="">
     The CPU Temperature sensor block can be used to read out the CPU temperature sensor reading from the Hexabot. The data will be derived from the latest CPU temperature that is received by the programming interface.
 </p>
 
 <p align="left">
-    <img src="assets/frontdistance_block.png" width="auto" height="15px" alt="">
+    <img src="assets/frontdistance_block.png" width="auto" height="20vh" alt="">
     The Front Distance sensor block can be used to read out the Front Distance sensor reading from the Hexabot. The data will be derived from the latest Front Distance that is received by the programming interface.
 </p>
 
 <p align="left">
-    <img src="assets/batteryvoltage_block.png" width="auto" height="15px" alt="">
+    <img src="assets/batteryvoltage_block.png" width="auto" height="20vh" alt="">
     The Battery Voltage sensor block can be used to read out the Battery Voltage sensor reading from the Hexabot. The data will be derived from the latest Battery Voltage that is received by the programming interface.
 </p>
 
 <p align="left">
-    <img src="assets/batterysoc_block.png" width="auto" height="15px" alt="">
+    <img src="assets/batterysoc_block.png" width="auto" height="20vh" alt="">
     The Battery State of Charge block can be used to read out the Battery State of Charge sensor reading from the Hexabot. The data will be derived from the latest Battery State of Charge that is received by the programming interface.
 </p>
 
 <p align="left">
-    <img src="assets/motorposition_block.png" width="auto" height="15px" alt="">
+    <img src="assets/motorposition_block.png" width="auto" height="20vh" alt="">
     The Motor Position block can be used to read out the Motor Position sensor reading from the Hexabot. This block can either read out the X or the Y value of the position. The data will be derived from the latest Motor Position that is received by the programming interface.
 </p>
 
 <p align="left">
-    <img src="assets/cliff_block.png" width="auto" height="15px" alt="">
+    <img src="assets/cliff_block.png" width="auto" height="20vh" alt="">
     The Cliff block can be used to read out the Cliff sensor reading from the Hexabot. This block can read out the value of the different cliff sensors: 1 (middle), 2 (left) or 3 (right). The data will be derived from the latest Cliff that is received by the programming interface.
 </p>
 
 <p align="left">
-    <img src="assets/armposition_block.png" width="auto" height="15px" alt="">
+    <img src="assets/armposition_block.png" width="auto" height="20vh" alt="">
     The Arm position block can be used to read out the Arm position reading from the Hexabot. This block can read out the value of the different arm sensors: 1 (base) / 2 (joint). The data will be derived from the latest Arm position that is received by the programming interface.
 </p>
 
 <p align="left">
-    <img src="assets/gripperstate_block.png" width="auto" height="15px" alt="">
+    <img src="assets/gripperstate_block.png" width="auto" height="20vh" alt="">
     The Gripper state block can be used to read out the Gripper state from the Hexabot. The data will be derived from the latest Gripper state that is received by the programming interface.
 </p>
 
 #### Output blocks
 
 <p align="left">
-    <img src="assets/movemotor_block.png" width="auto" height="15px" alt="">
+    <img src="assets/movemotor_block.png" width="auto" height="20vh" alt="">
     The Move motors block sends the Hexabot robot a command to move the motors by a specified distance in X and Y. The unit of distance is millimeters (mm). The movement is calculated from the center of the Hexabot robot, with a cartesian coordinate system (positive x to the right, positive y to the top). See the image below for a reference in relation to the robot.
 </p>
 
 <p align="left">
-    <img src="assets/rotatemotor_block.png" width="auto" height="15px" alt="">
+    <img src="assets/rotatemotor_block.png" width="auto" height="20vh" alt="">
     The Rotate motors block sends the Hexabot robot a command to rotate the motors by a specified angle. The unit of the angle is degrees (0 - 360). The rotation is calculated from the center of the Hexabot robot. See the image below for a reference in relation to the robot.
 </p>
 
@@ -530,7 +530,7 @@ https://en.wikipedia.org/wiki/Greater-than_sign#Greater-than_sign_with_equals_si
 </div>
 
 <p align="left">
-    <img src="assets/movearm_block.png" width="auto" height="15px" alt="">
+    <img src="assets/movearm_block.png" width="auto" height="20vh" alt="">
     The Move arm block sends the Hexabot robot a command to move the robot arm to a specified set of coordinates X and Y. The unit of these coordinates is millimeters (mm). The movement is calculated from the center axis of the base of the robot arm of the Hexabot robot. The first arm is 45mm, with the second arm is 38mm for a total reach of 83mm. See the image below for a reference in relation to the robot, the grid is a side view, with the base being in the middle of the robot, and the end pointing towards the top of the Hexabot robot.
 </p>
 
@@ -539,7 +539,7 @@ https://en.wikipedia.org/wiki/Greater-than_sign#Greater-than_sign_with_equals_si
 </div>
 
 <p align="left">
-    <img src="assets/ledcolor_block.png" width="auto" height="15px" alt="">
+    <img src="assets/ledcolor_block.png" width="auto" height="20vh" alt="">
     The Set LED 1 / 2 to n (hue) block sends the Hexabot robot a command to set the specified LED to the specified hue color. The value of the LED can be LED 1 (left) or LED 2 (right), the hue is specified acording to the default hue color scale. See the image below for the hue scale.
 </p>
 
@@ -548,12 +548,12 @@ https://en.wikipedia.org/wiki/Greater-than_sign#Greater-than_sign_with_equals_si
 </div>
 
 <p align="left">
-    <img src="assets/logmessage_block.png" width="auto" height="15px" alt="">
+    <img src="assets/logmessage_block.png" width="auto" height="20vh" alt="">
     The Log message block is primarily used to solve problems in the code, as the log message can give information about the progress of the program. To read the log messages, open the browser console. For more information about the console, take a look at documentation on <a href="https://www.browserstack.com/guide/browser-console#how-to-open-browser-console" target="_blank">Browserstack - Console</a> (links to an external site).
 </p>
 
 <p align="left">
-    <img src="assets/debugwebsocket_block.png" width="auto" height="15px" alt="">
+    <img src="assets/debugwebsocket_block.png" width="auto" height="20vh" alt="">
     The [DEBUG] Send WebSocket message block is a debugging block used to send specific commands to the Hexabot robot. It should not be used during normal programming.
 </p>
 
