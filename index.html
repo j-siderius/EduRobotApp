@@ -1146,16 +1146,32 @@
                             { "kind": "block", "type": "logic_compare" },
                         ]
                     },
+                    // {
+                    //     "kind": "category",
+                    //     "name": "Variables",
+                    //     "custom": "VARIABLE",
+                    //     "contents": [
+                    //         { "kind": "block", "type": "variables_get" },
+                    //         { "kind": "block", "type": "variables_set" },
+                    //         { "kind": "block", "type": "math_number" },
+                    //         { "kind": "block", "type": "text" },
+                    //         { "kind": "block", "type": "logic_boolean" },
+                    //     ]
+                    // },
                     {
                         "kind": "category",
                         "name": "Variables",
-                        "custom": "VARIABLE",
                         "contents": [
+                            {
+                                "kind": "button",
+                                "text": "Create variable",
+                                "callbackKey": "CREATE_VARIABLE"
+                            },
                             { "kind": "block", "type": "variables_get" },
                             { "kind": "block", "type": "variables_set" },
                             { "kind": "block", "type": "math_number" },
                             { "kind": "block", "type": "text" },
-                            { "kind": "block", "type": "logic_boolean" },
+                            { "kind": "block", "type": "logic_boolean" }
                         ]
                     },
                     {
