@@ -29,7 +29,7 @@ class Servo:
 import math, asyncio
 
 class ArmManager:
-    ARM1_LENGTH = 43  # in mm
+    ARM1_LENGTH = 45  # in mm
     ARM2_LENGTH = 38  # in mm
 
     def __init__(self, servoPin1: int, servoPin2: int, servoPin3: int) -> None:
