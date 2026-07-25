@@ -355,8 +355,18 @@ By combining these code-blocks, programs of different complexity can be made.
 
 ### Example programs
 
+Several example programs are shown below to serve as a starting point for block-based programming and for inspiration.
+
+#### Front obstacle detection
+
+In this example, the robot will continuously check if there is an object in front of it. If the object is closer than 15 cm, the Rotate motors block in the first container is executed. The robot will turn by 90 degrees to the right. Else, no object is detected and the robot executes the Move motor block to move forward 100 mm.
+
+<div align="center">
+    <img src="assets/frontdistance_example.png" width="50%" height="auto" alt="Example program that detects obstacles and turns away from them if they are close">
+</div>
+
 > [!NOTE]
-> Example programs will be added in the near future
+> More example programs will be added in the near future
 
 
 ### Blocks explained
