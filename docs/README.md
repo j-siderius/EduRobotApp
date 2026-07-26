@@ -13,7 +13,7 @@ The Hexabot features:
  - Huge extensibility with free digital and analog IO, multiple I2C ports including Qwiic and Stemma QT, two independant SPI ports and one UART port
 
 <div align="center">
-    <img src="assets/robot_overview.png" width="50%" height="auto" alt="Closeup of the Hexabot robot, showing an angled view from the front">
+    <img src="assets/full_robot.jpeg" width="75%" height="auto" alt="Closeup of the Hexabot robot, showing an angled view from the front">
 </div>
 
 <!-- Colors: 🔴🟠🟡🟢🔵🟣🟤⚫⚪ -->
@@ -79,7 +79,7 @@ The Hexabot will arive partially assembled, to be finished by the learner. Each 
 - (Optional) 1x USB-C cable for charging
 
 <div align="center">
-    <img src="assets/overview_image.png" width="50%" height="auto" alt="Hexabot kit overview image with all components">
+    <img src="assets/overview_image.png" width="75%" height="auto" alt="Hexabot kit overview image with all components">
 </div>
 
 
@@ -128,12 +128,12 @@ Take four nuts and bolts from the mounting hardware. Insert these from the top i
     <img src="assets/arminstall_bolts.png" width="50%" height="auto" alt="Bolts inserted from the top, arm assembly inserted into the circuit board, nuts tightened to the bolts">
 </div>
 
-To finish the installation of both the motors and the robot arm assembly, their respective cables need to be connected. All three motors have a connector on the motor, and a pin header on the Hexabot circuit board, marked "Motor Pins n" (with n being the respective number) next to them. The black six-cable connector at the end of the motor cable can be plugged in the "Motor Pin n" connector. The white six-cable connector at the other end of the motor cable can be plugged into the motor with the flat side towards the inside. To fully insert the connected into the motor,  Looking from the inside of the robot towards the motor, the red cable (🔴) should be on the right side of the connector. See the image below for a visual guide. 
+To finish the installation of both the motors and the robot arm assembly, their respective cables need to be connected. All three motors have a connector on the motor, and a pin header on the Hexabot circuit board, marked "Motor Pins n" (with n being the respective number) next to them. Each motor cable has one smaller white and one larger black connector, with six colored cables.
+
+The smaller white connector can be plugged into the motor, where the red cable (🔴) should align with the "M2" marking on the motor. To fully insert the connecter into the motor, it might need to be pushed down on either side of the connector while laying on a flat surface. The larger black connector can be plugged into the connector on the Hexabot circuit board, where the red cable (🔴) should align with the left side, looking from the outside of the robot. See the image below for a visual guide.
 
 > [!NOTE]
-> The connection from each motor to each motor controller is the same, however due to the layout of the Hexabot circuit board, it may seem like the color order of the cable is strange or wrong.
-
-<!-- TODO: Change photo and text since this one is misleading -->
+> The connection from each motor to each motor controller is the same, however due to the layout of the Hexabot circuit board, motor controllers are sometimes on the left or right of the motor. Be aware that the plug is inserted correctly, as cross-plugging connectors can lead to damage.
 
 <div align="center">
     <img src="assets/motorinstall_cables.png" width="50%" height="auto" alt="Cable order for all motor connectors, including color highlight">
@@ -148,7 +148,7 @@ To finish the installation of the robot arm assembly, the cables from all servo 
 Lastly, install the three Omnidirectional wheels on each of the motor shafts. The wheels have a pre-assembled shaft collar which can slide over the motor shaft. The mounting screw on each shaft collar can be hand-tightened in order to fasten the wheel to the motor.
 
 > [!NOTE]
-> The motor shafts have a D-profile, meaning they are generally circular, but they have one flat side. The shaft collar on the omnidirectional wheels also has this shape and therefor can only fit onto the motor in one way.
+> The motor shafts have a D-profile, meaning they have one flat side. The shaft collar on the omnidirectional wheels also has this shape and therefor can only fit onto the motor shaft in one way.
 
 <div align="center">
     <img src="assets/motorarminstall_final.png" width="50%" height="auto" alt="Fully mechanically assembled Hexabot robot">
@@ -184,7 +184,7 @@ Repeat the installation of the motor drivers three times, until all drivers are 
     <img src="assets/motordriver.png" width="50%" height="auto" alt="Closeup of motor driver in the correct orientation, including color highlight">
 </div>
 
-Insert both Adressable LEDs into their connectors labeled "LED n" (with n being the respective number). The LEDs are installed on the left and right side on the top side of the Hexabot circuit board. With the Hexabot circuit board oriented with the robot arm at the top, the LEDs should both point towards the right. See the image below for a visual guide. 
+Insert both Adressable LEDs into their connectors labeled "LED n" (with n being the respective number). The LEDs are installed on the left and right side on the top side of the Hexabot circuit board. With the Hexabot circuit board oriented with the robot arm at the top, the LEDs should both point towards the right.
 
 > [!NOTE]
 > The connection from each LED to the Hexabot circuit board is the same, however due to the layout of the Hexabot circuit board, it may seem like one LED is turned around.
@@ -193,13 +193,13 @@ Insert both Adressable LEDs into their connectors labeled "LED n" (with n being 
     <img src="assets/leds.png" width="50%" height="auto" alt="Closeup of LEDs">
 </div>
 
-Insert the battery charging circuit into the connector(s) labeled "Battery Charger" on the right side of the Hexabot circuit board. The USB-C connector on the charging circuit should point to the outside of the robot in order to enable easy charging. Be careful to first align all pins of the charging circuit before pushing it into the connector, in order to prevent bending pins. See the image below for a visual guide. 
+Insert the battery charging circuit into the connector(s) labeled "Battery Charger" on the right side of the Hexabot circuit board. The USB-C connector on the charging circuit should point to the outside of the robot in order to enable easy charging. Be careful to first align all pins of the charging circuit before pushing it into the connector, in order to prevent bending pins.
   
 <div align="center">
     <img src="assets/batterycharger.png" width="50%" height="auto" alt="Closeup of charging circuit">
 </div>
 
-Insert the battery fuel gauge into the connector(s) labeled "Battery Monitoring" next to the battery charging circuit on the Hexabot circuit board. The white battery connector should point to the inside of the robot. Be careful to first align all pins of the charging circuit before pushing it into the connector, in order to prevent bending pins. See the image below for a visual guide. 
+Insert the battery fuel gauge into the connector(s) labeled "Battery Monitoring" next to the battery charging circuit on the Hexabot circuit board. The white battery connector should point to the inside of the robot. Be careful to first align all pins of the charging circuit before pushing it into the connector, in order to prevent bending pins.
 
 > [!NOTE]
 > The battery connection on the battery fuel gauge is not used on the Hexabot, since the battery is internally connected to this module. No connection needs to be made to the white battery connector.
@@ -208,7 +208,7 @@ Insert the battery fuel gauge into the connector(s) labeled "Battery Monitoring"
     <img src="assets/batteryfuelgauge.png" width="50%" height="auto" alt="Closeup of fuel gauge circuit">
 </div> 
 
-The LED, battery charging circuit and battery fuel gauge are installed as following in the Hexabot circuit board:
+LED 2, the battery charging circuit and battery fuel gauge should be installed as follows in the Hexabot circuit board:
 
 <div align="center">
     <img src="assets/ledchargefuelgauge_final.png" width="50%" height="auto" alt="Overview of led, battery charger and fuel gauge">
@@ -238,13 +238,13 @@ Insert the Ground sensor into the connector labeled "Ground Sensor 1" at the top
     <img src="assets/ground_placement.png" width="50%" height="auto" alt="Closeup of ground sensor in the correct orientation">
 </div>
 
-Insert the Electronic compass into the connector labeled "Compass" at the left side of the Hexabot circuit board. The module should point to the bottom of the robot, towards from the battery holder. See the image below for a visual guide. 
+Insert the Electronic compass into the connector labeled "Compass" at the left side of the Hexabot circuit board. The module should point to the bottom of the robot, towards from the battery holder.
   
 <div align="center">
     <img src="assets/compass.png" width="50%" height="auto" alt="Closeup of compass in the correct orientation">
 </div>
 
-Lastly, the Raspberry Pi Pico 2W controller is inserted into the connector(s) labeled "Microcontroller" on the left side of the robot. The micro-USB connector of the controller should point to the bottom of the robot. Be careful to first align all pins of the controller before pushing it into the connector, in order to prevent bending pins. See the image below for a visual guide. 
+Lastly, the Raspberry Pi Pico 2W controller is inserted into the connector(s) labeled "Microcontroller" on the left side of the robot. The micro-USB connector of the controller should point to the bottom of the robot. Be careful to first align all pins of the controller before pushing it into the connector, in order to prevent bending pins.
   
 <div align="center">
     <img src="assets/microcontroller.png" width="50%" height="auto" alt="Closeup of Microcontroller in the correct orientation">
@@ -350,7 +350,7 @@ There are different categories of code-blocks:
 By combining these code-blocks, programs of different complexity can be made.
 
 <div align="center">
-    <img src="assets/blockcategories_overview.png" width="50%" height="auto" alt="Code-block categories overview">
+    <img src="assets/blockcategories_overview.png" width="75%" height="auto" alt="Code-block categories overview">
 </div>
 
 ### Example programs
@@ -550,7 +550,7 @@ https://en.wikipedia.org/wiki/Greater-than_sign#Greater-than_sign_with_equals_si
 
 <p align="left">
     <img src="assets/ledcolor_block.png" width="auto" height="20vh" alt="">
-    The Set LED 1 / 2 to n (hue) block sends the Hexabot robot a command to set the specified LED to the specified hue color. The value of the LED can be LED 1 (left) or LED 2 (right), the hue is specified acording to the default hue color scale. See the image below for the hue scale.
+    The Set LED block sends the Hexabot robot a command to set the specified LED to the specified hue color. The value of the LED can be LED 1 (left) or LED 2 (right), the hue is specified acording to the default hue color scale. See the image below for the hue scale.
 </p>
 
 <div align="center">
