@@ -72,8 +72,8 @@ class ArmManager:
             self.servo1.setRotation(theta1)
             self.servo2.setRotation(theta2)
 
-    def grip(self) -> None:
-        if self.gripping:
+    def grip(self, grip: int = None) -> None:
+        if self.gripping or grip == 0:
             self.servo3.setMiddle()
             self.gripping = False
         else:

@@ -1059,6 +1059,26 @@
                 return `robotsocket.send("/servos/move/${xpos}/${ypos}");\n`;
             }
 
+            Blockly.Blocks['gripper'] = {
+                init: function () {
+                    this.appendEndRowInput('NAME')
+                        .appendField('Grip arm')
+                        .appendField(new Blockly.FieldDropdown([
+                            ['closed', '1'],
+                            ['open', '0']
+                        ]), 'GRIPPER');
+                    this.setTooltip('');
+                    this.setHelpUrl('');
+                    this.setColour(0);
+                }
+            }
+            javascript.javascriptGenerator.forBlock['gripper'] = 
+            function (block) {
+                let grip = block.getFieldValue('GRIPPER');
+
+                return `robotsocket.send("/servos/grip/${grip}}");\n`;
+            }
+
             // TODO: implement selection of LED and color via picker?
             Blockly.Blocks['led_color'] = {
                 init: function () {
@@ -1088,6 +1108,28 @@
                 rgbColor = hueToRgb(hueColor);
 
                 return `robotsocket.send("/leds/${ledNr}/${rgbColor.r}/${rgbColor.g}/${rgbColor.b}");\n`;
+            }
+
+            Blockly.Blocks['led_off'] = {
+                init: function () {
+                    this.appendEndRowInput('LEDOFF')
+                        .appendField('Turn LED')
+                        .appendField(new Blockly.FieldDropdown([
+                            ['1', 'one'],
+                            ['2', 'two']
+                        ]), 'LEDNR')
+                        .appendField('off');
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setTooltip('');
+                    this.setHelpUrl('');
+                    this.setColour(0);
+                }
+            };
+            javascript.javascriptGenerator.forBlock['led_off'] = function (block) {
+                let ledNr = block.getFieldValue('LEDNR');
+
+                return `robotsocket.send("/leds/${ledNr}/0/0/0}");\n`;
             }
 
             Blockly.Blocks['log'] = {
@@ -1248,6 +1290,9 @@
                                 }
                             },
                             {
+                                "kind": "block", "type": "gripper"
+                            },
+                            {
                                 "kind": "block", "type": "led_color",
                                 "inputs": {
                                     "LEDCOLOR": {
@@ -1259,6 +1304,9 @@
                                         }
                                     }
                                 }
+                            },
+                            {
+                                "kind": "block", "type": "led_off"
                             },
                             {
                                 "kind": 'block', "type": 'log',
