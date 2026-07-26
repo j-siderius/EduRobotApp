@@ -157,10 +157,13 @@ class MotorManager:
     async def rotate(self, angle_degrees: int, speed: float = 0.5):
         rotationDistance = (math.pi * self.CIRCUMCIRCLE_RADIUS) * ( angle_degrees / 360 )
         
+        actualSpeed = speed if angle_degrees > 0 else -speed
+        absRotationDistance = abs(rotationDistance)
+        
         await asyncio.gather(
-                self._moveMotor(self.motors[0], self.encoders[0], speed, rotationDistance),
-                self._moveMotor(self.motors[1], self.encoders[1], speed, rotationDistance),
-                self._moveMotor(self.motors[2], self.encoders[2], speed, rotationDistance)
+                self._moveMotor(self.motors[0], self.encoders[0], actualSpeed, absRotationDistance),
+                self._moveMotor(self.motors[1], self.encoders[1], actualSpeed, absRotationDistance),
+                self._moveMotor(self.motors[2], self.encoders[2], actualSpeed, absRotationDistance)
             )
         
     async def stop(self):
